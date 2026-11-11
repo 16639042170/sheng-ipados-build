@@ -37,6 +37,7 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           repository: Soneoylys/UniXNU-sheng
           ref: 6f4792fe416ea88ce0aab1bcd480b430f4807165

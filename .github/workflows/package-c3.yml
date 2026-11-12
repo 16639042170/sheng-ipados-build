@@ -142,7 +142,7 @@ jobs:
           PY
           python3 tools/fetch-sources.py
       - name: pin sm8550 source
-        run: sed -i '' 's/a9f45dc60c035084b95463781538380f4c3606c9/97665e28578483082b674e8375a8fa65f4cf49cf/' device/feeds.toml
+        run: sed -i '' 's/a9f45dc60c035084b95463781538380f4c3606c9/2dc650ca76ae38715cd0712e60a44b14fe251745/' device/feeds.toml
       - name: proprietary firmware (Touch, Keyboard, Video)
         # build-gop-legacy-display-27.py needs nanosic/MCU_Upgrade.bin in .cache/firmware. extract-files.py
         # downloads it from the pinned public mirror (@fetch in proprietary-files.txt) and checks its SHA-256.

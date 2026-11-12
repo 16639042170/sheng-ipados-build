@@ -1,18 +1,17 @@
 diff --git a/NativeLegacyDisplay.cpp b/NativeLegacyDisplay.cpp
-index c3776ab..d8ea4ec 100644
+index c3776ab..8ec36ce 100644
 --- a/NativeLegacyDisplay.cpp
 +++ b/NativeLegacyDisplay.cpp
-@@ -40,6 +40,9 @@ extern "C" bool native_legacy_prepare_scanout(void);
+@@ -40,6 +40,8 @@ extern "C" bool native_legacy_prepare_scanout(void);
  extern "C" void native_legacy_transfer_observed(IOReturn,const void *,uint64_t);
  extern "C" void native_legacy_copy_timing_observed(uint64_t ticks,uint64_t bytes);
  extern "C" void native_legacy_retirement_observed(IOService *);
 +// Diagnostic image only: counters the board probe already keeps, read for the on-screen panel.
 +extern "C" volatile uint32_t native_legacy_pm_calls,native_legacy_pm_callbacks,native_legacy_pm_ordinal;
-+extern "C" volatile uint32_t native_legacy_frame_count;
  // GPU hand-off (boot-arg sheng-fb-gpu=1): the frame is offered to the privileged GPU client instead of being copied; the swap retires when the
  // client reports the GPU copy done (native_legacy_gpu_complete). A refused offer or a failed copy uses the CPU copy below and is counted.
  // format: NGP_BGRX8888, or for a half-float surface NGP_RGBA16F_LINEAR / NGP_RGBA16F_ENCODED (the client converts it on the GPU).
-@@ -148,6 +151,86 @@ static bool convertHalfRows(volatile void *dst,uint64_t dstLength,uint64_t dstSt
+@@ -148,6 +150,86 @@ static bool convertHalfRows(volatile void *dst,uint64_t dstLength,uint64_t dstSt
      }
      return true;
  }
@@ -99,7 +98,7 @@ index c3776ab..d8ea4ec 100644
  class NativeLegacyDisplay;
  static NativeLegacyDisplay *gDirectDisplay=nullptr;
  extern "C" void native_legacy_direct_snapshot(void);
-@@ -512,12 +595,47 @@ public:
+@@ -512,12 +594,47 @@ public:
          if(status!=kIOReturnSuccess){PMstop();logicalPM=false;IOMobileFramebufferLegacy::stop(provider);return false;}
          return true;
      }
@@ -108,9 +107,9 @@ index c3776ab..d8ea4ec 100644
 +        volatile uint8_t *base=reinterpret_cast<volatile uint8_t *>(bootMapping->getVirtualAddress());
 +        if(!base)return;
 +        char l0[96],l1[96],l2[96],l3[96];
-+        char *p0=l0;diagField(p0,"F",(uint32_t)native_legacy_frame_count);
++        char *p0=l0;diagField(p0,"SW",(uint32_t)native_legacy_swapstat[0]);
++        diagField(p0,"CP",(uint32_t)native_legacy_swapstat[7]);
 +        diagField(p0,"K1",(uint32_t)native_legacy_swapstat[8]);
-+        diagField(p0,"SW",(uint32_t)native_legacy_swapstat[0]);
 +        diagField(p0,"FL",(uint32_t)native_legacy_swapstat[9]);*p0=0;
 +        char *p1=l1;diagField(p1,"PM",(uint32_t)diagPmEntries);
 +        diagField(p1,"CB",(uint32_t)native_legacy_pm_callbacks);
@@ -150,7 +149,7 @@ index c3776ab..d8ea4ec 100644
      }
      // The explicit offline system-client experiment publishes only the real
      // GOP mode. Unknown backend calls retain their stop-with-caller guards.
-@@ -565,6 +683,7 @@ public:
+@@ -565,6 +682,7 @@ public:
      }
      void kickOnce() {
          unsigned enabled=0;PE_parse_boot_argn("offline-legacy-transfer",&enabled,sizeof(enabled));
@@ -158,7 +157,7 @@ index c3776ab..d8ea4ec 100644
          stat(1);
          if(enabled!=1 || !logicalPM || !bootMapping || !primary){stat(3);return;}
          if(transferred){stat(2);return;}
-@@ -601,6 +720,7 @@ public:
+@@ -601,6 +719,7 @@ public:
              native_legacy_frame_observed(1,0,0,0,0,0);
              stat(8);note(8,-1,request);
              {const uint32_t colors[4]={0xff000000U,0,0,0};const uint64_t counts[4]={(uint64_t)bw*bh,0,0,0};native_legacy_frame_colors_observed(colors,counts,0);}
@@ -166,7 +165,7 @@ index c3776ab..d8ea4ec 100644
              native_legacy_transfer_observed(kIOReturnSuccess,request,blankLength);
              finishTransfer(request);
              return;
-@@ -627,8 +747,8 @@ public:
+@@ -627,8 +746,8 @@ public:
          }
          noteSurface(surface,memory);
          const bool half=nativeHalf(native_legacy_surface_format(surface),native_legacy_surface_planes(surface));
@@ -177,7 +176,7 @@ index c3776ab..d8ea4ec 100644
              if(!gpuWrote(request)) {transferred=true;return;}
              const int slot=directSlot(surface,memory);
              if(slot>=0) {
-@@ -673,7 +793,9 @@ public:
+@@ -673,7 +792,9 @@ public:
                  OSSafeReleaseNULL(source);native_legacy_transfer_observed(kIOReturnBadArgument,request,0);return;
              }
              __asm__ volatile("dsb sy" ::: "memory");
@@ -188,7 +187,7 @@ index c3776ab..d8ea4ec 100644
              shadowValid=false;OSSafeReleaseNULL(source);transferred=true;
              native_legacy_transfer_observed(kIOReturnSuccess,request,length);
              finishTransfer(request);
-@@ -714,7 +836,9 @@ public:
+@@ -714,7 +835,9 @@ public:
              stored=length;
          }
          __asm__ volatile("dsb sy" ::: "memory");

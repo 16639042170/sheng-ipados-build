@@ -1,5 +1,5 @@
 diff --git a/NativeLegacyDisplay.cpp b/NativeLegacyDisplay.cpp
-index c3776ab..396cbf5 100644
+index c3776ab..f4acede 100644
 --- a/NativeLegacyDisplay.cpp
 +++ b/NativeLegacyDisplay.cpp
 @@ -40,6 +40,8 @@ extern "C" bool native_legacy_prepare_scanout(void);
@@ -48,7 +48,7 @@ index c3776ab..396cbf5 100644
 +    return kDiagGlyphs[0].col;
 +}
 +static void diagText(volatile uint8_t *base,uint64_t stride,uint32_t width,uint32_t height,
-+                     int x,int y,const char *text,uint32_t color,unsigned scale) {
++                     unsigned x,unsigned y,const char *text,uint32_t color,unsigned scale) {
 +    for(unsigned i=0;text[i];++i) {
 +        const uint8_t *glyph=diagGlyph(text[i]);
 +        for(unsigned gx=0;gx<5;++gx)for(unsigned gy=0;gy<7;++gy) {
@@ -75,7 +75,7 @@ index c3776ab..396cbf5 100644
 +        for(unsigned x=0;x<panelWidth;++x)row[x]=0xff101010u;
 +        row[0]=0xff00ffffu;row[panelWidth-1]=0xff00ffffu;
 +    }
-+    for(unsigned i=0;i<count;++i)diagText(base,stride,width,height,pad,pad+int(i*line),lines[i],0xffffffffu,scale);
++    for(unsigned i=0;i<count;++i)diagText(base,stride,width,height,pad,pad+i*line,lines[i],0xffffffffu,scale);
 +}
 +// Last CPU copy in counter ticks, split by the path that produced the frame.
 +static volatile uint64_t diagHalfTicks,diagBgraTicks;
@@ -98,7 +98,7 @@ index c3776ab..396cbf5 100644
  class NativeLegacyDisplay;
  static NativeLegacyDisplay *gDirectDisplay=nullptr;
  extern "C" void native_legacy_direct_snapshot(void);
-@@ -512,12 +594,47 @@ public:
+@@ -512,12 +594,46 @@ public:
          if(status!=kIOReturnSuccess){PMstop();logicalPM=false;IOMobileFramebufferLegacy::stop(provider);return false;}
          return true;
      }
@@ -118,10 +118,9 @@ index c3776ab..396cbf5 100644
 +        diagField(p1,"C8",(uint32_t)diagBgraFrames);
 +        diagField(p1,"D",(uint32_t)native_legacy_direct[0]);*p1=0;
 +        char *p2=l2;diagField(p2,"HT",diagMilliseconds(diagHalfTicks));
-+        diagField(p2,"BT",diagMilliseconds(diagBgraTicks));
-+        diagField(p2,"MS",0);*p2=0;
-+        const char *l3="SHENG DIAG";
-+        const char *lines[4]={l3,l0,l1,l2};
++        diagField(p2,"BT",diagMilliseconds(diagBgraTicks));*p2=0;
++        const char *title="SHENG DIAG";
++        const char *lines[4]={title,l0,l1,l2};
 +        diagPanel(base,stride,width,height,lines,4,width>=2000?3:2);
 +        __asm__ volatile("dsb sy" ::: "memory");
 +    }
@@ -149,7 +148,7 @@ index c3776ab..396cbf5 100644
      }
      // The explicit offline system-client experiment publishes only the real
      // GOP mode. Unknown backend calls retain their stop-with-caller guards.
-@@ -565,6 +682,7 @@ public:
+@@ -565,6 +681,7 @@ public:
      }
      void kickOnce() {
          unsigned enabled=0;PE_parse_boot_argn("offline-legacy-transfer",&enabled,sizeof(enabled));
@@ -157,7 +156,7 @@ index c3776ab..396cbf5 100644
          stat(1);
          if(enabled!=1 || !logicalPM || !bootMapping || !primary){stat(3);return;}
          if(transferred){stat(2);return;}
-@@ -601,6 +719,7 @@ public:
+@@ -601,6 +718,7 @@ public:
              native_legacy_frame_observed(1,0,0,0,0,0);
              stat(8);note(8,-1,request);
              {const uint32_t colors[4]={0xff000000U,0,0,0};const uint64_t counts[4]={(uint64_t)bw*bh,0,0,0};native_legacy_frame_colors_observed(colors,counts,0);}
@@ -165,7 +164,7 @@ index c3776ab..396cbf5 100644
              native_legacy_transfer_observed(kIOReturnSuccess,request,blankLength);
              finishTransfer(request);
              return;
-@@ -627,8 +746,8 @@ public:
+@@ -627,8 +745,8 @@ public:
          }
          noteSurface(surface,memory);
          const bool half=nativeHalf(native_legacy_surface_format(surface),native_legacy_surface_planes(surface));
@@ -176,7 +175,7 @@ index c3776ab..396cbf5 100644
              if(!gpuWrote(request)) {transferred=true;return;}
              const int slot=directSlot(surface,memory);
              if(slot>=0) {
-@@ -673,7 +792,9 @@ public:
+@@ -673,7 +791,9 @@ public:
                  OSSafeReleaseNULL(source);native_legacy_transfer_observed(kIOReturnBadArgument,request,0);return;
              }
              __asm__ volatile("dsb sy" ::: "memory");
@@ -187,7 +186,7 @@ index c3776ab..396cbf5 100644
              shadowValid=false;OSSafeReleaseNULL(source);transferred=true;
              native_legacy_transfer_observed(kIOReturnSuccess,request,length);
              finishTransfer(request);
-@@ -714,7 +835,9 @@ public:
+@@ -714,7 +834,9 @@ public:
              stored=length;
          }
          __asm__ volatile("dsb sy" ::: "memory");

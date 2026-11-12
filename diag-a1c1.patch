@@ -1,0 +1,201 @@
+diff --git a/NativeLegacyDisplay.cpp b/NativeLegacyDisplay.cpp
+index c3776ab..d8ea4ec 100644
+--- a/NativeLegacyDisplay.cpp
++++ b/NativeLegacyDisplay.cpp
+@@ -40,6 +40,9 @@ extern "C" bool native_legacy_prepare_scanout(void);
+ extern "C" void native_legacy_transfer_observed(IOReturn,const void *,uint64_t);
+ extern "C" void native_legacy_copy_timing_observed(uint64_t ticks,uint64_t bytes);
+ extern "C" void native_legacy_retirement_observed(IOService *);
++// Diagnostic image only: counters the board probe already keeps, read for the on-screen panel.
++extern "C" volatile uint32_t native_legacy_pm_calls,native_legacy_pm_callbacks,native_legacy_pm_ordinal;
++extern "C" volatile uint32_t native_legacy_frame_count;
+ // GPU hand-off (boot-arg sheng-fb-gpu=1): the frame is offered to the privileged GPU client instead of being copied; the swap retires when the
+ // client reports the GPU copy done (native_legacy_gpu_complete). A refused offer or a failed copy uses the CPU copy below and is counted.
+ // format: NGP_BGRX8888, or for a half-float surface NGP_RGBA16F_LINEAR / NGP_RGBA16F_ENCODED (the client converts it on the GPU).
+@@ -148,6 +151,86 @@ static bool convertHalfRows(volatile void *dst,uint64_t dstLength,uint64_t dstSt
+     }
+     return true;
+ }
++// ---------------------------------------------------------------------------
++// A1+C1 diagnostic image: a small fixed panel in the top-left corner of the
++// GOP framebuffer. It shows what the board probe already counts (frames,
++// blank fills, PM callbacks, CPU half/BGRA frames) and the last CPU copy in
++// milliseconds. It observes only; the copy and blank paths are unchanged.
++// ---------------------------------------------------------------------------
++struct DiagGlyph {char c;uint8_t col[5];};
++static const DiagGlyph kDiagGlyphs[] = {
++    {' ',{0,0,0,0,0}},{'0',{0x3e,0x51,0x49,0x45,0x3e}},{'1',{0,0x42,0x7f,0x40,0}},
++    {'2',{0x42,0x61,0x51,0x49,0x46}},{'3',{0x21,0x41,0x45,0x4b,0x31}},
++    {'4',{0x18,0x14,0x12,0x7f,0x10}},{'5',{0x27,0x45,0x45,0x45,0x39}},
++    {'6',{0x3c,0x4a,0x49,0x49,0x30}},{'7',{0x01,0x71,0x09,0x05,0x03}},
++    {'8',{0x36,0x49,0x49,0x49,0x36}},{'9',{0x06,0x49,0x49,0x29,0x1e}},
++    {'A',{0x7e,0x11,0x11,0x11,0x7e}},{'B',{0x7f,0x49,0x49,0x49,0x36}},
++    {'C',{0x3e,0x41,0x41,0x41,0x22}},{'D',{0x7f,0x41,0x41,0x22,0x1c}},
++    {'E',{0x7f,0x49,0x49,0x49,0x41}},{'F',{0x7f,0x09,0x09,0x09,0x01}},
++    {'G',{0x3e,0x41,0x49,0x49,0x7a}},{'H',{0x7f,0x08,0x08,0x08,0x7f}},
++    {'I',{0,0x41,0x7f,0x41,0}},{'J',{0x20,0x40,0x41,0x3f,0x01}},
++    {'K',{0x7f,0x08,0x14,0x22,0x41}},{'L',{0x7f,0x40,0x40,0x40,0x40}},
++    {'M',{0x7f,0x02,0x0c,0x02,0x7f}},{'N',{0x7f,0x04,0x08,0x10,0x7f}},
++    {'O',{0x3e,0x41,0x41,0x41,0x3e}},{'P',{0x7f,0x09,0x09,0x09,0x06}},
++    {'Q',{0x3e,0x41,0x51,0x21,0x5e}},{'R',{0x7f,0x09,0x19,0x29,0x46}},
++    {'S',{0x46,0x49,0x49,0x49,0x31}},{'T',{0x01,0x01,0x7f,0x01,0x01}},
++    {'U',{0x3f,0x40,0x40,0x40,0x3f}},{'V',{0x1f,0x20,0x40,0x20,0x1f}},
++    {'W',{0x3f,0x40,0x38,0x40,0x3f}},{'X',{0x63,0x14,0x08,0x14,0x63}},
++    {'Y',{0x07,0x08,0x70,0x08,0x07}},{'Z',{0x61,0x51,0x49,0x45,0x43}},
++    {'.',{0,0,0x60,0,0}},{'-',{0x08,0x08,0x08,0x08,0x08}},
++};
++static const uint8_t *diagGlyph(char c) {
++    for(const DiagGlyph &g:kDiagGlyphs)if(g.c==c)return g.col;
++    return kDiagGlyphs[0].col;
++}
++static void diagText(volatile uint8_t *base,uint64_t stride,uint32_t width,uint32_t height,
++                     int x,int y,const char *text,uint32_t color,unsigned scale) {
++    for(unsigned i=0;text[i];++i) {
++        const uint8_t *glyph=diagGlyph(text[i]);
++        for(unsigned gx=0;gx<5;++gx)for(unsigned gy=0;gy<7;++gy) {
++            if(!(glyph[gx]&(1u<<gy)))continue;
++            const unsigned px=x+unsigned((i*6+gx)*scale),py=y+unsigned(gy*scale);
++            if(px>=width||py>=height)continue;
++            for(unsigned sy=0;sy<scale && py+sy<height;++sy) {
++                volatile uint32_t *row=reinterpret_cast<volatile uint32_t *>(base+stride*(py+sy));
++                for(unsigned sx=0;sx<scale && px+sx<width;++sx)row[px+sx]=color;
++            }
++        }
++    }
++}
++static void diagPanel(volatile uint8_t *base,uint64_t stride,uint32_t width,uint32_t height,
++                      const char *const *lines,unsigned count,unsigned scale) {
++    unsigned columns=0;
++    for(unsigned i=0;i<count;++i) {unsigned n=0;while(lines[i][n])++n;if(n>columns)columns=n;}
++    const unsigned pad=4*scale,line=9*scale;
++    unsigned panelWidth=columns*6*scale+2*pad,panelHeight=count*line+2*pad;
++    if(panelWidth>width)panelWidth=width;
++    if(panelHeight>height)panelHeight=height;
++    for(unsigned y=0;y<panelHeight;++y) {
++        volatile uint32_t *row=reinterpret_cast<volatile uint32_t *>(base+stride*y);
++        for(unsigned x=0;x<panelWidth;++x)row[x]=0xff101010u;
++        row[0]=0xff00ffffu;row[panelWidth-1]=0xff00ffffu;
++    }
++    for(unsigned i=0;i<count;++i)diagText(base,stride,width,height,pad,pad+int(i*line),lines[i],0xffffffffu,scale);
++}
++// Last CPU copy in counter ticks, split by the path that produced the frame.
++static volatile uint64_t diagHalfTicks,diagBgraTicks;
++static volatile uint32_t diagHalfFrames,diagBgraFrames;
++// setPowerState entries, including calls that do not go through logicalPM.
++static volatile uint32_t diagPmEntries;
++static void diagField(char *&p,const char *label,uint32_t value) {
++    while(*label)*p++=*label++;
++    *p++=' ';
++    char digits[10];unsigned n=0;
++    if(!value)digits[n++]='0';
++    while(value){digits[n++]=char('0'+value%10);value/=10;}
++    while(n)*p++=digits[--n];
++    *p++=' ';
++}
++static unsigned diagMilliseconds(uint64_t ticks) {
++    uint64_t frequency=0;__asm__ volatile("mrs %0, cntfrq_el0":"=r"(frequency));
++    return frequency?(unsigned)(ticks*1000/frequency):0;
++}
+ class NativeLegacyDisplay;
+ static NativeLegacyDisplay *gDirectDisplay=nullptr;
+ extern "C" void native_legacy_direct_snapshot(void);
+@@ -512,12 +595,47 @@ public:
+         if(status!=kIOReturnSuccess){PMstop();logicalPM=false;IOMobileFramebufferLegacy::stop(provider);return false;}
+         return true;
+     }
++    void diagOverlay(uint32_t width,uint32_t height,uint32_t stride) {
++        if(!bootMapping||!primary||!width||!height||stride<width*4)return;
++        volatile uint8_t *base=reinterpret_cast<volatile uint8_t *>(bootMapping->getVirtualAddress());
++        if(!base)return;
++        char l0[96],l1[96],l2[96],l3[96];
++        char *p0=l0;diagField(p0,"F",(uint32_t)native_legacy_frame_count);
++        diagField(p0,"K1",(uint32_t)native_legacy_swapstat[8]);
++        diagField(p0,"SW",(uint32_t)native_legacy_swapstat[0]);
++        diagField(p0,"FL",(uint32_t)native_legacy_swapstat[9]);*p0=0;
++        char *p1=l1;diagField(p1,"PM",(uint32_t)diagPmEntries);
++        diagField(p1,"CB",(uint32_t)native_legacy_pm_callbacks);
++        diagField(p1,"O",(uint32_t)native_legacy_pm_ordinal);
++        diagField(p1,"CH",(uint32_t)diagHalfFrames);
++        diagField(p1,"C8",(uint32_t)diagBgraFrames);
++        diagField(p1,"D",(uint32_t)native_legacy_direct[0]);*p1=0;
++        char *p2=l2;diagField(p2,"HT",diagMilliseconds(diagHalfTicks));
++        diagField(p2,"BT",diagMilliseconds(diagBgraTicks));
++        diagField(p2,"MS",0);*p2=0;
++        const char *l3="SHENG DIAG";
++        const char *lines[4]={l3,l0,l1,l2};
++        diagPanel(base,stride,width,height,lines,4,width>=2000?3:2);
++        __asm__ volatile("dsb sy" ::: "memory");
++    }
++    void diagOverlay() {
++        uint32_t width=0,height=0;getDisplayDimensions(&width,&height);
++        if(!width||!height||!bootMapping||!primary)return;
++        PE_Video video={};
++        if(PE_current_console(&video)||video.v_baseAddr!=bootMapping->getPhysicalAddress()||
++           video.v_width!=width||video.v_height!=height||video.v_depth!=32||video.v_rotate)return;
++        diagOverlay(width,height,video.v_rowBytes);
++    }
+     IOReturn setPowerState(unsigned long ordinal,IOService *device) override {
+-        if(!logicalPM)return IOMobileFramebufferLegacy::setPowerState(ordinal,device);
+-        if(ordinal>1 || !bootMapping){native_legacy_pm_observed(3,kIOReturnUnsupported,ordinal);return kIOReturnUnsupported;}
++        diagPmEntries=diagPmEntries+1;
++        if(!logicalPM) {
++            IOReturn status=IOMobileFramebufferLegacy::setPowerState(ordinal,device);
++            diagOverlay();return status;
++        }
++        if(ordinal>1 || !bootMapping){native_legacy_pm_observed(3,kIOReturnUnsupported,ordinal);diagOverlay();return kIOReturnUnsupported;}
+         native_legacy_pm_observed(3,kIOReturnSuccess,ordinal);
+         IOReturn status=IOMobileFramebufferLegacy::setPowerState(ordinal,device);
+-        native_legacy_pm_observed(4,status,ordinal);return status;
++        native_legacy_pm_observed(4,status,ordinal);diagOverlay();return status;
+     }
+     // The explicit offline system-client experiment publishes only the real
+     // GOP mode. Unknown backend calls retain their stop-with-caller guards.
+@@ -565,6 +683,7 @@ public:
+     }
+     void kickOnce() {
+         unsigned enabled=0;PE_parse_boot_argn("offline-legacy-transfer",&enabled,sizeof(enabled));
++        const bool diagBuild=true;
+         stat(1);
+         if(enabled!=1 || !logicalPM || !bootMapping || !primary){stat(3);return;}
+         if(transferred){stat(2);return;}
+@@ -601,6 +720,7 @@ public:
+             native_legacy_frame_observed(1,0,0,0,0,0);
+             stat(8);note(8,-1,request);
+             {const uint32_t colors[4]={0xff000000U,0,0,0};const uint64_t counts[4]={(uint64_t)bw*bh,0,0,0};native_legacy_frame_colors_observed(colors,counts,0);}
++            diagOverlay(bw,bh,blank.v_rowBytes);
+             native_legacy_transfer_observed(kIOReturnSuccess,request,blankLength);
+             finishTransfer(request);
+             return;
+@@ -627,8 +747,8 @@ public:
+         }
+         noteSurface(surface,memory);
+         const bool half=nativeHalf(native_legacy_surface_format(surface),native_legacy_surface_planes(surface));
+-        if(directOn && !half && !gpuBypass && latchRequest)stat(5);
+-        if(directOn && !half && !gpuBypass && !latchRequest) {
++        if(directOn && !half && !gpuBypass && latchRequest && !diagBuild)stat(5);
++        if(directOn && !half && !gpuBypass && !latchRequest && !diagBuild) {
+             if(!gpuWrote(request)) {transferred=true;return;}
+             const int slot=directSlot(surface,memory);
+             if(slot>=0) {
+@@ -673,7 +793,9 @@ public:
+                 OSSafeReleaseNULL(source);native_legacy_transfer_observed(kIOReturnBadArgument,request,0);return;
+             }
+             __asm__ volatile("dsb sy" ::: "memory");
+-            {uint64_t copyEnd;__asm__ volatile("isb\n\tmrs %0, cntpct_el0":"=r"(copyEnd));native_legacy_copy_timing_observed(copyEnd-copyStart,length);}
++            {uint64_t copyEnd;__asm__ volatile("isb\n\tmrs %0, cntpct_el0":"=r"(copyEnd));native_legacy_copy_timing_observed(copyEnd-copyStart,length);
++             diagHalfTicks=copyEnd-copyStart;diagHalfFrames=diagHalfFrames+1;}
++            diagOverlay(width,height,video.v_rowBytes);
+             shadowValid=false;OSSafeReleaseNULL(source);transferred=true;
+             native_legacy_transfer_observed(kIOReturnSuccess,request,length);
+             finishTransfer(request);
+@@ -714,7 +836,9 @@ public:
+             stored=length;
+         }
+         __asm__ volatile("dsb sy" ::: "memory");
+-        {uint64_t copyEnd;__asm__ volatile("isb\n\tmrs %0, cntpct_el0":"=r"(copyEnd));native_legacy_copy_timing_observed(copyEnd-copyStart,stored);}
++        {uint64_t copyEnd;__asm__ volatile("isb\n\tmrs %0, cntpct_el0":"=r"(copyEnd));native_legacy_copy_timing_observed(copyEnd-copyStart,stored);
++         diagBgraTicks=copyEnd-copyStart;diagBgraFrames=diagBgraFrames+1;}
++        diagOverlay(width,height,video.v_rowBytes);
+         OSSafeReleaseNULL(source);transferred=true;
+         native_legacy_transfer_observed(kIOReturnSuccess,request,length);
+         finishTransfer(request);

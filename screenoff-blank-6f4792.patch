@@ -1,0 +1,118 @@
+diff --git a/package/AppleARMBacklight.cpp b/package/AppleARMBacklight.cpp
+index 64d9e8c..137a465 100644
+--- a/package/AppleARMBacklight.cpp
++++ b/package/AppleARMBacklight.cpp
+@@ -93,6 +93,10 @@ void seIrq(void *context) {
+ }
+ }  // namespace
+ 
++class ShengBacklight;
++static ShengBacklight *gBacklight = nullptr;
++static volatile uint32_t gBlankFlag = 0;   // 0 none, 1 blank, 2 unblank
++
+ class ShengBacklight : public IOService {
+     OSDeclareDefaultStructors(ShengBacklight)
+     // What one engine is doing: reading the level at start, then writing LSB and MSB of the newest level asked for.
+@@ -103,6 +107,8 @@ class ShengBacklight : public IOService {
+     IOTimerEventSource *fade = nullptr, *tick = nullptr, *attachTimer = nullptr, *request = nullptr;
+     IOInterruptEventSource *inbox = nullptr;
+     uint32_t level = 0, from = 0, to = 0, target = 0, attachTries = 0;
++    uint32_t savedLevel = 0;   // last lit level, restored when the panel unblanks
++    bool blanked = false;
+     uint64_t start = 0, period = 0;
+     bool irqMode = false, published = false;
+ 
+@@ -201,12 +207,15 @@ class ShengBacklight : public IOService {
+         self->service();
+     }
+     // A brightness request on the work loop (setProperties arms this timer at once): the newest one asked for, if not yet taken.
+-    static void requestFired(OSObject *owner, IOTimerEventSource *) {
++    static void requestFired(OSObject *owner, IOTimerEventSource *sender) {
+         ShengBacklight *self = static_cast<ShengBacklight *>(owner);
+         if (!self) return;
+         native_backlight_request[2] = native_backlight_request[2] + 1;
+         const uint64_t request = __atomic_exchange_n(&gRequest, 0ull, __ATOMIC_ACQUIRE);
+         if (request >> 63) {native_backlight_request[3] = native_backlight_request[3] + 1; self->beginFade((uint32_t)(request >> 16) & 0xffff, (uint32_t)request & 0xffff);}
++        const uint32_t blank = __atomic_exchange_n(&gBlankFlag, 0u, __ATOMIC_ACQUIRE);
++        if (blank) self->setBlank(blank == 1u);
++        sender->setTimeoutMS(100);   // carries a blank flag set while no brightness request is outstanding
+     }
+     static void tickFired(OSObject *owner, IOTimerEventSource *) {
+         if (ShengBacklight *self = static_cast<ShengBacklight *>(owner)) self->service();
+@@ -258,6 +267,7 @@ class ShengBacklight : public IOService {
+         if (!self->published && self->engine[0].started && self->engine[1].started) self->publishFirst();
+         self->armTick();
+         self->attachTimer->setTimeoutMS(1);
++        self->request->setTimeoutMS(100);
+         return kIOReturnSuccess;
+     }
+     void publish(uint32_t value) {
+@@ -365,6 +375,22 @@ class ShengBacklight : public IOService {
+         native_backlight_stats[0] = impersonated ? 4 : 3;
+     }
+ public:
++    // One brightness request from any context: the work loop takes the newest one.
++    void requestLevel(uint32_t goal, uint64_t milliseconds) {
++        native_backlight_request[0] = (int32_t)goal;
++        native_backlight_request[1] = (int32_t)milliseconds;
++        __atomic_store_n(&gRequest, 1ull << 63 | (uint64_t)goal << 16 | (milliseconds & 0xffff), __ATOMIC_RELEASE);
++        request->setTimeoutUS(1);
++        publish(goal);
++    }
++    // Runs on the work loop: the compositor blanked the panel (all layers disabled over black) or lit it again.
++    void setBlank(bool blank) {
++        if (blank) {
++            if (!blanked) {savedLevel = target; blanked = true; beginFade(0, 0);}
++        } else if (blanked) {
++            blanked = false; beginFade(savedLevel, 0);
++        }
++    }
+     bool startBacklight(const bool usable[2]) {
+         loop = IOWorkLoop::workLoop();
+         fade = IOTimerEventSource::timerEventSource(this, &ShengBacklight::fadeStep);
+@@ -416,17 +442,13 @@ public:
+             return kIOReturnSuccess;
+         }
+         bump(1);
+-        native_backlight_request[0] = (int32_t)goal;
+-        native_backlight_request[1] = (int32_t)milliseconds;
+-        // Handed to the work loop without waiting for it (a runAction here blocks backboardd's brightness thread on the work loop's
+-        // gate; int-277 got 53 requests in the first 41 s and none after): a newer request replaces one not yet taken. The request timer, not
+-        // the interrupt source, carries it: int-278 signalled the interrupt source for 345 requests and wrote none.
+-        __atomic_store_n(&gRequest, 1ull << 63 | (uint64_t)goal << 16 | milliseconds, __ATOMIC_RELEASE);
+-        request->setTimeoutUS(1);
+-        publish(goal);
++        requestLevel(goal, milliseconds);
+         return kIOReturnSuccess;
+     }
+ };
++extern "C" void sheng_backlight_blank(bool blank) {
++    __atomic_store_n(&gBlankFlag, blank ? 1u : 2u, __ATOMIC_RELEASE);
++}
+ #if __has_feature(ptrauth_calls)
+ // OSDefineMetaClassAndStructors(ShengBacklight, IOService) with getMetaClass answering the AppleARMBacklight metaclass after impersonate().
+ ShengBacklight::MetaClass ShengBacklight::gMetaClass;
+@@ -464,5 +486,5 @@ extern "C" void sheng_backlight_start(void) {
+         if (backlight) backlight->release();
+         fail(3, -19); return;
+     }
+-    backlight->release();
++    gBacklight = backlight;   // the service is never freed (see the class comment)
+ }
+diff --git a/package/LegacyDisplayProbe.cpp b/package/LegacyDisplayProbe.cpp
+index e4c1a26..8f130a6 100644
+--- a/package/LegacyDisplayProbe.cpp
++++ b/package/LegacyDisplayProbe.cpp
+@@ -159,7 +159,12 @@ volatile uint32_t native_legacy_frame_kind[NATIVE_LEGACY_FRAMES];
+ volatile uint32_t native_legacy_frame_time[NATIVE_LEGACY_FRAMES];
+ volatile uint64_t native_legacy_frame_stats[NATIVE_LEGACY_FRAMES][5];
+ static uint64_t frameEpoch;
++extern "C" void sheng_backlight_blank(bool) __attribute__((weak_import));
+ void native_legacy_frame_observed(unsigned kind,uint64_t count,uint64_t minx,uint64_t miny,uint64_t maxx,uint64_t maxy) {
++    // The compositor's blank swap (all layers disabled over black) is the panel going dark: the backlight driver turns the LEDs off.
++    static bool blankKnown=false,blankLast=false;
++    const bool blank=kind==1;
++    if (&sheng_backlight_blank && (!blankKnown || blank!=blankLast)) {sheng_backlight_blank(blank); blankKnown=true; blankLast=blank;}
+     uint32_t n=native_legacy_frame_count;
+     uint64_t now,frequency;
+     __asm__ volatile("isb\n\tmrs %0, cntpct_el0":"=r"(now));__asm__ volatile("mrs %0, cntfrq_el0":"=r"(frequency));

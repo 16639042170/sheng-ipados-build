@@ -146,6 +146,13 @@ jobs:
         # downloads it from the pinned public mirror (@fetch in proprietary-files.txt) and checks its SHA-256.
         working-directory: device
         run: python3 scripts/extract-files.py --section Keyboard
+      - name: WCN7850 firmware (pinned)
+        working-directory: device
+        run: |
+          mkdir -p firmware/wcn7850
+          base=https://github.com/16639042170/sheng-ipados-build/releases/download/wifi-fw
+          for f in amss.bin m3.bin board-2.bin; do curl -fsSL -o "firmware/wcn7850/$f" "$base/$f"; done
+          sha256sum firmware/wcn7850/amss.bin firmware/wcn7850/m3.bin firmware/wcn7850/board-2.bin
       - name: package
         working-directory: device
         env:

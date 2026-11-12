@@ -1,5 +1,5 @@
 diff --git a/NativeLegacyDisplay.cpp b/NativeLegacyDisplay.cpp
-index c3776ab..f4acede 100644
+index c3776ab..c05c6c5 100644
 --- a/NativeLegacyDisplay.cpp
 +++ b/NativeLegacyDisplay.cpp
 @@ -40,6 +40,8 @@ extern "C" bool native_legacy_prepare_scanout(void);
@@ -106,7 +106,7 @@ index c3776ab..f4acede 100644
 +        if(!bootMapping||!primary||!width||!height||stride<width*4)return;
 +        volatile uint8_t *base=reinterpret_cast<volatile uint8_t *>(bootMapping->getVirtualAddress());
 +        if(!base)return;
-+        char l0[96],l1[96],l2[96],l3[96];
++        char l0[96],l1[96],l2[96];
 +        char *p0=l0;diagField(p0,"SW",(uint32_t)native_legacy_swapstat[0]);
 +        diagField(p0,"CP",(uint32_t)native_legacy_swapstat[7]);
 +        diagField(p0,"K1",(uint32_t)native_legacy_swapstat[8]);

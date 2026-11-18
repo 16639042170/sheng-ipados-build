@@ -282,49 +282,23 @@ jobs:
         run: |
           python3 - <<'PYTHON'
           from pathlib import Path
-          helper = r'''
-          def trim_native_text(native):
-              # TRIM_NATIVE_TEXT: the sheng kernel's native __TEXT is slightly larger
-              # than the only free __PRELINK_TEXT window. Drop trailing unwind metadata
-              # or page padding, never live text or data.
-              text = next((s for s in native.segments if s['name'] == '__TEXT'), None)
-              if text is None:
-                  return None
-              sections = [s for s in native.sections if s['segment'] == '__TEXT' and s['size']]
-              if not sections:
-                  return None
-              last = max(sections, key=lambda s: s['va'] + s['size'])
-              end = last['va'] + last['size'] - text['va']
-              old = text['size']
-              if last['name'] == '__eh_frame' and last['size'] >= 0x1e8:
-                  before = max((s['va'] + s['size'] for s in sections if s is not last), default=text['va'])
-                  text['size'] = before - text['va']
-                  text['filesize'] = min(text['filesize'], text['size'])
-                  last['size'] = 0
-                  print(f'prelink: dropped __TEXT,__eh_frame {old:#x} -> {text["size"]:#x}')
-                  return old - text['size']
-              if old > end:
-                  text['size'] = end
-                  text['filesize'] = min(text['filesize'], end)
-                  print(f'prelink: trimmed __TEXT padding {old:#x} -> {end:#x}')
-                  return old - end
-              print(f'prelink: no safe __TEXT trim: size {old:#x}, last {last["name"]} ends {end:#x}')
-              return None
-          '''
-          import textwrap
-          helper = textwrap.dedent(helper)
-          paths = list(Path('UniXNU').rglob('fileset_layout.py'))
-          if not paths:
-              raise SystemExit('fileset_layout.py not found')
-          for path in paths:
+          needle = "        self.reserve('__TEXT', self.hole('__PRELINK_TEXT', self.segment('__TEXT')['size']))\n"
+          replacement = (
+              "        try:\n"
+              "            self.reserve('__TEXT', self.hole('__PRELINK_TEXT', self.segment('__TEXT')['size']))\n"
+              "        except ValueError:\n"
+              "            self.roots['__NATIVE_TEXT'] = dict(self.roots['__PRELINK_INFO'], name='__NATIVE_TEXT')\n"
+              "            self.reserve('__TEXT', self.roots['__NATIVE_TEXT']['va'])\n"
+          )
+          for path in Path('UniXNU').rglob('fileset_layout.py'):
               text = path.read_text()
-              if 'TRIM_NATIVE_TEXT' in text:
+              if "roots['__NATIVE_TEXT']" in text:
                   print('already patched', path)
                   continue
-              text = text.replace('class Layout:', helper + '\n\nclass Layout:', 1)
-              text = text.replace('        self.cache, self.native = cache, native\n',
-                                  '        trim_native_text(native)\n        self.cache, self.native = cache, native\n', 1)
-              path.write_text(text)
+              if needle not in text:
+                  print('needle not found', path)
+                  continue
+              path.write_text(text.replace(needle, replacement, 1))
               print('patched', path)
           PYTHON
       - name: Build images

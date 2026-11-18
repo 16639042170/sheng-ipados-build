@@ -14,7 +14,7 @@ on:
   push:
     branches: [macos-lab]
     paths:
-      - .github/workflows/macos-lab.yml
+      - .github/workflows/**
 
 permissions:
   contents: read

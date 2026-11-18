@@ -34,6 +34,7 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       UNIXNU_UNIQUE_CHIP_ID: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
       CCACHE: ${{ github.workspace }}/compile-records.py
+# retry 2
       CORE_REF: ${{ inputs.core_ref || '563595abedfdfa413ad583b66b6176d82007e633' }}
       DEVICE_REF: ${{ inputs.device_ref || 'c8f92b208068eeaa4cd2b0f592671f04ee70076e' }}
     steps:

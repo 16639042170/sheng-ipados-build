@@ -1,0 +1,29 @@
+name: inspect macos logs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/log-inspect.yml
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-logs
+          run-id: 44407008942
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: logs
+      - name: Show prelink and kernel tails
+        run: |
+          find logs -type f | sort | head -80
+          for f in $(find logs -name prelink.log); do echo "=== $f"; cat "$f"; done
+          for f in $(find logs -name kernel.log); do echo "=== tail $f"; tail -40 "$f"; done

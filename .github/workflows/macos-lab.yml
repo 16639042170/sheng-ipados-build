@@ -33,6 +33,7 @@ jobs:
       HOMEBREW_NO_AUTO_UPDATE: 1
       GITHUB_TOKEN: ${{ github.token }}
       UNIXNU_UNIQUE_CHIP_ID: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
+      CCACHE: ${{ github.workspace }}/compile-records.py
       CORE_REF: ${{ inputs.core_ref || '563595abedfdfa413ad583b66b6176d82007e633' }}
       DEVICE_REF: ${{ inputs.device_ref || 'c8f92b208068eeaa4cd2b0f592671f04ee70076e' }}
     steps:
@@ -121,6 +122,81 @@ jobs:
           rustup toolchain install 1.98.0 --profile minimal --component rust-src
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
+      - name: Install compile-record hook
+        run: |
+          cat > "$GITHUB_WORKSPACE/compile-records.py" <<'PYTHON'
+          #!/usr/bin/env python3
+          """Record every XNU compile as <object>.json, then run the compiler.
+
+          XNU's makedefs set KCC = $(CCACHE) $(CC) and leave CCACHE to the
+          build that drives it. The archive builders re-run one compile from
+          the record beside that object, with the exact flags the kernel used.
+          """
+          import json
+          import os
+          import sys
+
+          SOURCE_SUFFIXES = ('.c', '.cc', '.cpp', '.cxx', '.m', '.mm')
+
+
+          def source_argument(args):
+              found = None
+              skip = False
+              for value in args:
+                  if skip:
+                      skip = False
+                      continue
+                  if value in ('-o', '-MF', '-MT', '-MQ', '-include', '-imacros', '-isystem',
+                               '-I', '-D', '-U'):
+                      skip = True
+                      continue
+                  if value.startswith('-'):
+                      continue
+                  if value.endswith(SOURCE_SUFFIXES):
+                      found = value
+              return found
+
+
+          def object_argument(args, source):
+              for index, value in enumerate(args):
+                  if value == '-o' and index + 1 < len(args):
+                      return args[index + 1], args
+                  if value.startswith('-o') and len(value) > 2:
+                      return value[2:], args
+              name = os.path.basename(source)
+              name = name[:name.rfind('.')] + '.o'
+              return name, args + ['-o', name]
+
+
+          def main(argv):
+              if len(argv) < 2:
+                  raise SystemExit('usage: compile-records.py COMPILER [ARGS...]')
+              compiler = argv[1]
+              args = argv[2:]
+              if '-c' not in args:
+                  os.execv(compiler, [compiler] + args)
+              source = source_argument(args)
+              if source is None:
+                  os.execv(compiler, [compiler] + args)
+              target, args = object_argument(args, source)
+              if not os.path.isabs(target):
+                  target = os.path.join(os.getcwd(), target)
+              record = {
+                  'directory': os.getcwd(),
+                  'file': source,
+                  'arguments': [compiler] + args,
+              }
+              os.makedirs(os.path.dirname(target) or '.', exist_ok=True)
+              with open(target + '.json', 'w', encoding='utf-8') as stream:
+                  json.dump(record, stream)
+                  stream.write('\n')
+              os.execv(compiler, [compiler] + args)
+
+
+          if __name__ == '__main__':
+              main(sys.argv)
+          PYTHON
+          chmod +x "$GITHUB_WORKSPACE/compile-records.py"
       - name: Prime locked Wi-Fi sources
         run: |
           python3 - <<'PYTHON'
@@ -185,6 +261,20 @@ jobs:
       - name: Prepare installation
         working-directory: UniXNU
         run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          board = Path('../device/board.toml')
+          text = board.read_text()
+          needle = '"component:ShengUfs", "component:RamBlock", "component:Adreno740", "fetch-sheng-dts.py"'
+          replacement = ('"component:ShengUfs", '
+                         '"build-sheng-source-storage.py --policy-dir scripts/policies/macos-27.3-26C5035r", '
+                         '"component:RamBlock", "component:Adreno740", "fetch-sheng-dts.py"')
+          if needle in text:
+              board.write_text(text.replace(needle, replacement, 1))
+              print('macOS source-storage archive added to board.toml')
+          elif 'build-sheng-source-storage.py --policy-dir scripts/policies/macos-27.3-26C5035r' not in text:
+              raise SystemExit('macOS archives list not found in board.toml')
+          PYTHON
           ./unixnu defconfig sheng_macos_defconfig -D ../device --os macos-27
           ./unixnu fetch --os macos-27
           python3 ../device/scripts/prepare-macos-install.py

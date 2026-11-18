@@ -278,10 +278,88 @@ jobs:
           ./unixnu defconfig sheng_macos_defconfig -D ../device --os macos-27
           ./unixnu fetch --os macos-27
           python3 ../device/scripts/prepare-macos-install.py
+      - name: Patch prelink __TEXT trim
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          candidates = list(Path('UniXNU/out').rglob('fileset_layout.py'))
+          if not candidates:
+              raise SystemExit('fileset_layout.py not found')
+          path = next((p for p in candidates if 'class Layout' in p.read_text()), candidates[0])
+          text = path.read_text()
+          if 'TRIM_NATIVE_TEXT' in text:
+              print('fileset_layout.py already patched')
+              raise SystemExit
+          helper = r'''
+          def trim_native_text(native):
+              # TRIM_NATIVE_TEXT: the sheng kernel's native __TEXT is slightly larger
+              # than the only free __PRELINK_TEXT window. Drop trailing unwind metadata
+              # or page padding, never live text or data.
+              text = next((s for s in native.segments if s['name'] == '__TEXT'), None)
+              if text is None:
+                  return None
+              sections = [s for s in native.sections if s['segment'] == '__TEXT' and s['size']]
+              if not sections:
+                  return None
+              last = max(sections, key=lambda s: s['va'] + s['size'])
+              end = last['va'] + last['size'] - text['va']
+              old = text['size']
+              if old > end:
+                  text['size'] = end
+                  text['filesize'] = min(text['filesize'], end)
+                  print(f'prelink: trimmed __TEXT padding {old:#x} -> {end:#x}')
+                  return old - end
+              if last['name'] == '__eh_frame' and last['size'] >= 0x1e8:
+                  before = max((s['va'] + s['size'] for s in sections if s is not last), default=text['va'])
+                  text['size'] = before - text['va']
+                  text['filesize'] = min(text['filesize'], text['size'])
+                  last['size'] = 0
+                  print(f'prelink: dropped __TEXT,__eh_frame {old:#x} -> {text["size"]:#x}')
+                  return old - text['size']
+              print(f'prelink: no safe __TEXT trim: size {old:#x}, last {last["name"]} ends {end:#x}')
+              return None
+          '''
+          import textwrap
+          helper = textwrap.dedent(helper)
+          text = text.replace('class Layout:', helper + '\n\nclass Layout:', 1)
+          text = text.replace('        self.cache, self.native = cache, native\n',
+                              '        trim_native_text(native)\n        self.cache, self.native = cache, native\n', 1)
+          path.write_text(text)
+          print('patched', path)
+          PYTHON
       - name: Build images
         id: build-images
         working-directory: device
         run: scripts/package.sh --os macos-27 --uefi ../uefi-sheng
+      - name: Inspect native kernel
+        if: always()
+        run: |
+          python3 - <<'PYTHON'
+          import struct
+          from pathlib import Path
+          matches = list(Path('UniXNU/out').glob('sheng/macos-27.3-26C5035r/sheng_macos/tree/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837.unstripped.noctf'))
+          print('native kernels:', matches)
+          for path in matches:
+              data = path.read_bytes()
+              print(path, len(data))
+              magic, cpu, _, kind, count, size = struct.unpack_from('<6I', data, 0)
+              print('header', hex(magic), hex(cpu), kind, count, size)
+              off = 32
+              for _ in range(count):
+                  cmd, length = struct.unpack_from('<II', data, off)
+                  if cmd == 0x19:
+                      name, va, vsize, foff, fsize = struct.unpack_from('<16s4Q', data, off + 8)
+                      name = name.rstrip(b'\0').decode()
+                      print(f'segment {name} va={va:#x} vmsize={vsize:#x} fileoff={foff:#x} filesize={fsize:#x}')
+                      if name == '__TEXT':
+                          nsects, = struct.unpack_from('<I', data, off + 64)
+                          for index in range(nsects):
+                              s = off + 72 + 80 * index
+                              sect, seg = (data[s+i:s+i+16].rstrip(b'\0').decode() for i in (0, 16))
+                              sva, ssize = struct.unpack_from('<QQ', data, s + 32)
+                              print(f'  section {seg},{sect} va={sva:#x} size={ssize:#x}')
+                  off += length
+          PYTHON
       - name: Publish shader inventory
         if: always()
         uses: actions/upload-artifact@v4
@@ -334,6 +412,13 @@ jobs:
           name: sheng-macos-27
           path: artifacts/
           compression-level: 0
+          retention-days: 1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: native-kernel
+          path: |
+            UniXNU/out/sheng/*/*/tree/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837.unstripped.noctf
           retention-days: 1
       - uses: actions/upload-artifact@v4
         if: failure()

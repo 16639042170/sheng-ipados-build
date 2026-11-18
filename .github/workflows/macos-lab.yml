@@ -34,7 +34,6 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       UNIXNU_UNIQUE_CHIP_ID: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
       CCACHE: ${{ github.workspace }}/compile-records.py
-# retry 2
       CORE_REF: ${{ inputs.core_ref || '563595abedfdfa413ad583b66b6176d82007e633' }}
       DEVICE_REF: ${{ inputs.device_ref || 'c8f92b208068eeaa4cd2b0f592671f04ee70076e' }}
     steps:
@@ -279,19 +278,14 @@ jobs:
           ./unixnu defconfig sheng_macos_defconfig -D ../device --os macos-27
           ./unixnu fetch --os macos-27
           python3 ../device/scripts/prepare-macos-install.py
-      - name: Patch prelink __TEXT trim
+      - name: Install prelink watcher
         run: |
-          python3 - <<'PYTHON'
+          cat > "$GITHUB_WORKSPACE/watch_prelink.py" <<'PYTHON'
+          #!/usr/bin/env python3
           from pathlib import Path
-          candidates = list(Path('UniXNU/out').rglob('fileset_layout.py'))
-          if not candidates:
-              raise SystemExit('fileset_layout.py not found')
-          path = next((p for p in candidates if 'class Layout' in p.read_text()), candidates[0])
-          text = path.read_text()
-          if 'TRIM_NATIVE_TEXT' in text:
-              print('fileset_layout.py already patched')
-              raise SystemExit
-          helper = r'''
+          import os, time
+          ROOT = Path(os.environ['GITHUB_WORKSPACE']) / 'UniXNU' / 'out'
+          HELPER = r'''
           def trim_native_text(native):
               # TRIM_NATIVE_TEXT: the sheng kernel's native __TEXT is slightly larger
               # than the only free __PRELINK_TEXT window. Drop trailing unwind metadata
@@ -320,13 +314,41 @@ jobs:
               print(f'prelink: no safe __TEXT trim: size {old:#x}, last {last["name"]} ends {end:#x}')
               return None
           '''
-          import textwrap
-          helper = textwrap.dedent(helper)
-          text = text.replace('class Layout:', helper + '\n\nclass Layout:', 1)
-          text = text.replace('        self.cache, self.native = cache, native\n',
-                              '        trim_native_text(native)\n        self.cache, self.native = cache, native\n', 1)
-          path.write_text(text)
-          print('patched', path)
+          def patch(path):
+              text = path.read_text(encoding='utf-8')
+              if 'TRIM_NATIVE_TEXT' in text:
+                  return
+              text = text.replace('class Layout:', HELPER + '\n\nclass Layout:', 1)
+              text = text.replace('        self.cache, self.native = cache, native\n',
+                                  '        trim_native_text(native)\n        self.cache, self.native = cache, native\n', 1)
+              path.write_text(text, encoding='utf-8')
+              print('prelink watcher patched', path, flush=True)
+          while True:
+              patched = False
+              for path in ROOT.rglob('fileset_layout.py'):
+                  try:
+                      patch(path)
+                      patched = True
+                  except Exception as error:
+                      print('prelink watcher retry:', error, flush=True)
+              if patched:
+                  break
+              time.sleep(0.5)
+          PYTHON
+          chmod +x "$GITHUB_WORKSPACE/watch_prelink.py"
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          package = Path('device/scripts/package.sh')
+          text = package.read_text()
+          needle = 'set -euo pipefail\n'
+          insert = 'set -euo pipefail\n\npython3 "$GITHUB_WORKSPACE/watch_prelink.py" &\n'
+          if 'watch_prelink.py' not in text:
+              if needle not in text:
+                  raise SystemExit('package.sh header not found')
+              package.write_text(text.replace(needle, insert, 1))
+              print('prelink watcher started by package.sh')
+          else:
+              print('package.sh already has prelink watcher')
           PYTHON
       - name: Build images
         id: build-images

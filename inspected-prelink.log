@@ -1,0 +1,22 @@
+by name: 3430 functions, 287 data of 3856 kext-facing targets; 139 unpaired, 0 conflicts
+prelink: dropped __TEXT,__eh_frame 0x1dc000 -> 0x1dab38
+Traceback (most recent call last):
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/XnuPrelink/emit_prelink.py", line 388, in <module>
+    main()
+    ~~~~^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/XnuPrelink/emit_prelink.py", line 370, in main
+    image, report = emit_images(original_data, native_data, pairing, args.root,
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                stub_symbol=stub_symbol, early_security_init=initializers or None)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_emit.py", line 718, in emit_images
+    emit.rewrite_native_chains()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_segmented.py", line 62, in rewrite_native_chains
+    self.native_pointers, counts = relocate_native(self.data, self.layout)
+                                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 329, in relocate_native
+    source = layout.section_address(si, so)
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 243, in section_address
+    raise ValueError(f'Split-segment offset exceeds section {ordinal}')
+ValueError: Split-segment offset exceeds section 7

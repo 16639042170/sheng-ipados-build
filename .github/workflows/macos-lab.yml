@@ -278,14 +278,11 @@ jobs:
           ./unixnu defconfig sheng_macos_defconfig -D ../device --os macos-27
           ./unixnu fetch --os macos-27
           python3 ../device/scripts/prepare-macos-install.py
-      - name: Install prelink watcher
+      - name: Patch prelink source
         run: |
-          cat > "$GITHUB_WORKSPACE/watch_prelink.py" <<'PYTHON'
-          #!/usr/bin/env python3
+          python3 - <<'PYTHON'
           from pathlib import Path
-          import os, time
-          ROOT = Path(os.environ['GITHUB_WORKSPACE']) / 'UniXNU' / 'out'
-          HELPER = r'''
+          helper = r'''
           def trim_native_text(native):
               # TRIM_NATIVE_TEXT: the sheng kernel's native __TEXT is slightly larger
               # than the only free __PRELINK_TEXT window. Drop trailing unwind metadata
@@ -314,41 +311,21 @@ jobs:
               print(f'prelink: no safe __TEXT trim: size {old:#x}, last {last["name"]} ends {end:#x}')
               return None
           '''
-          def patch(path):
-              text = path.read_text(encoding='utf-8')
+          import textwrap
+          helper = textwrap.dedent(helper)
+          paths = list(Path('UniXNU').rglob('fileset_layout.py'))
+          if not paths:
+              raise SystemExit('fileset_layout.py not found')
+          for path in paths:
+              text = path.read_text()
               if 'TRIM_NATIVE_TEXT' in text:
-                  return
-              text = text.replace('class Layout:', HELPER + '\n\nclass Layout:', 1)
+                  print('already patched', path)
+                  continue
+              text = text.replace('class Layout:', helper + '\n\nclass Layout:', 1)
               text = text.replace('        self.cache, self.native = cache, native\n',
                                   '        trim_native_text(native)\n        self.cache, self.native = cache, native\n', 1)
-              path.write_text(text, encoding='utf-8')
-              print('prelink watcher patched', path, flush=True)
-          while True:
-              patched = False
-              for path in ROOT.rglob('fileset_layout.py'):
-                  try:
-                      patch(path)
-                      patched = True
-                  except Exception as error:
-                      print('prelink watcher retry:', error, flush=True)
-              if patched:
-                  break
-              time.sleep(0.5)
-          PYTHON
-          chmod +x "$GITHUB_WORKSPACE/watch_prelink.py"
-          python3 - <<'PYTHON'
-          from pathlib import Path
-          package = Path('device/scripts/package.sh')
-          text = package.read_text()
-          needle = 'set -euo pipefail\n'
-          insert = 'set -euo pipefail\n\npython3 "$GITHUB_WORKSPACE/watch_prelink.py" &\n'
-          if 'watch_prelink.py' not in text:
-              if needle not in text:
-                  raise SystemExit('package.sh header not found')
-              package.write_text(text.replace(needle, insert, 1))
-              print('prelink watcher started by package.sh')
-          else:
-              print('package.sh already has prelink watcher')
+              path.write_text(text)
+              print('patched', path)
           PYTHON
       - name: Build images
         id: build-images

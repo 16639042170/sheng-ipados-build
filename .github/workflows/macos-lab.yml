@@ -1,0 +1,256 @@
+name: sheng macOS lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      core_ref:
+        description: UniXNU core branch or commit
+        type: string
+        default: 563595abedfdfa413ad583b66b6176d82007e633
+      device_ref:
+        description: UniXNU-sheng device branch or commit
+        type: string
+        default: c8f92b208068eeaa4cd2b0f592671f04ee70076e
+  push:
+    branches: [macos-lab]
+    paths:
+      - .github/workflows/macos-lab.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sheng-macos-lab-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  images:
+    runs-on: macos-26
+    timeout-minutes: 360
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      UNIXNU_IPSW_JOBS: 16
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      GITHUB_TOKEN: ${{ github.token }}
+      UNIXNU_UNIQUE_CHIP_ID: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
+      CORE_REF: ${{ inputs.core_ref || '563595abedfdfa413ad583b66b6176d82007e633' }}
+      DEVICE_REF: ${{ inputs.device_ref || 'c8f92b208068eeaa4cd2b0f592671f04ee70076e' }}
+    steps:
+      - name: Check out device sources
+        uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU-sheng
+          ref: ${{ env.DEVICE_REF }}
+          path: device
+          submodules: recursive
+      - name: Check out core sources
+        uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU
+          ref: ${{ env.CORE_REF }}
+          path: UniXNU
+          submodules: recursive
+      - name: Check out firmware sources
+        uses: actions/checkout@v4
+        with:
+          repository: UniXNU/uefi-sheng
+          ref: 8156d2e54a9f57818dc8b415a1a7dc28ad9ba4be
+          path: uefi-sheng
+          submodules: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Check secrets
+        env:
+          seed: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
+        run: |
+          if ! [[ "$seed" =~ ^[0-9a-fA-F]{8}$ ]]; then
+            echo 'Set the repository secret UNIXNU_UNIQUE_CHIP_ID: the platform seed of the device, 8 hex digits.' >&2
+            exit 1
+          fi
+      - name: Restore build inputs
+        id: build-cache
+        uses: actions/cache/restore@v4
+        with:
+          key: sheng-macos27-build-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: sheng-macos27-build-v1-${{ runner.os }}-
+          path: |
+            UniXNU/out/feeds
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/gpu-reference
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/mesa-work
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/adreno-metal-bridge
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/m2v-target
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/mesa-tu-macos27
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/data.dbr
+            device/drivers/Ath12kWifi/deps
+            device/.cache/firmware
+      - name: Refresh pinned translator checkout
+        run: |
+          python3 - <<'PYTHON'
+          import hashlib, json, shutil, subprocess
+          from pathlib import Path
+          core = Path('UniXNU')
+          pin = json.loads((core / 'scripts/data/gpu-metal-vulkan-inputs.json').read_text())['translator']['commit']
+          source = core / 'out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/gpu-reference/metal2vulkan'
+          signature = hashlib.sha256((pin + '\n').encode() + (core / 'scripts/build-adreno-metal-bridge.py').read_bytes() + b''.join(path.read_bytes() for path in sorted((core / 'drivers/AdrenoMetal/bridge/patches').glob('*.patch')))).hexdigest()
+          stamp = source.with_name('unixnu-translator-patch.sha256')
+          if source.exists():
+              actual = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip()
+              if actual != pin or not stamp.exists() or stamp.read_text().strip() != signature:
+                  shutil.rmtree(source)
+          stamp.parent.mkdir(parents=True, exist_ok=True)
+          stamp.write_text(signature + '\n')
+          PYTHON
+      - name: Install build tools
+        run: |
+          brew install dtc llvm lld llvm@22 lld@22 cmake mtools ninja glslang shaderc spirv-tools bison pkgconf rustup unifdef openssl@3 zstd blacktop/tap/ipsw
+          {
+            echo "$HOME/.cargo/bin"
+            echo "/opt/homebrew/opt/bison/bin"
+          } >> "$GITHUB_PATH"
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          toolchain = Path('uefi-toolchain').resolve()
+          toolchain.mkdir()
+          for name in ('clang', 'llvm-lib', 'llvm-rc', 'lld-link'):
+              package = 'lld@22' if name == 'lld-link' else 'llvm@22'
+              (toolchain / name).symlink_to(Path('/opt/homebrew/opt') / package / 'bin' / name)
+          with Path(__import__('os').environ['GITHUB_ENV']).open('a') as output:
+              output.write('CLANG_BIN=' + str(toolchain) + '/\n')
+          PYTHON
+          rustup toolchain install 1.98.0 --profile minimal --component rust-src
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+      - name: Identify kernel SDK cache
+        id: kernel-sdk
+        run: |
+          python3 - <<'PYTHON'
+          import hashlib, os, subprocess
+          from pathlib import Path
+          version = subprocess.check_output(['xcodebuild', '-version']) + subprocess.check_output(['xcrun', '--sdk', 'iphoneos', '--show-sdk-version'])
+          key = 'sheng-macos27-kernel-v1-' + hashlib.sha256(version).hexdigest()[:16]
+          with Path(os.environ['GITHUB_OUTPUT']).open('a') as output:
+              output.write('key=' + key + '\n')
+          PYTHON
+      - name: Restore kernel compile records
+        id: kernel-cache
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ steps.kernel-sdk.outputs.key }}-${{ github.run_id }}
+          restore-keys: ${{ steps.kernel-sdk.outputs.key }}-
+          path: |
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/xnu-inputs.json
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/fakeroot
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/xnu
+      - name: Generate lab password
+        run: |
+          python3 - <<'PYTHON'
+          import os, secrets, string
+          password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(16))
+          print(f'::add-mask::{password}')
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('UNIXNU_LAB_PASSWORD=' + password + '\n')
+          os.makedirs('artifacts', exist_ok=True)
+          with open('artifacts/lab-password.txt', 'w') as output:
+              output.write(password + '\n')
+          PYTHON
+      - name: Prepare installation
+        working-directory: UniXNU
+        run: |
+          ./unixnu defconfig sheng_macos_defconfig -D ../device --os macos-27
+          ./unixnu fetch --os macos-27
+          python3 ../device/scripts/prepare-macos-install.py
+      - name: Build images
+        id: build-images
+        working-directory: device
+        run: scripts/package.sh --os macos-27 --uefi ../uefi-sheng
+      - name: Publish shader inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shader-inventory
+          path: |
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/prime-list.txt
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/prime-list.json
+          retention-days: 1
+      - name: Build root storage
+        working-directory: UniXNU
+        run: |
+          python3 - <<'PY'
+          import subprocess, sys
+          sys.path.insert(0, 'scripts')
+          from unixnu.cli import parser
+          from unixnu.config import Context
+          ctx = Context(parser().parse_args(['build', 'userdata', '-D', '../device', '--os', 'macos-27']))
+          objects = []
+          for window in ctx.board['userdata']['windows']:
+              name = window['name']
+              objects += ['--object', f'{name}.vroot={ctx.tree}/build/verified-root-{name}/hashes.bin']
+          subprocess.run(['./unixnu', 'build', 'userdata', '--os', 'macos-27', *objects], check=True)
+          PY
+      - name: Stage device artifacts
+        run: |
+          target=UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos
+          cp "$target/boot/boot.img" "$target/payload/payload.img" "$target/kernel/kernel.macho" "$target/package.manifest.json" artifacts/
+          cp "$target/runtime/data.dbr" artifacts/
+          cp "$target/tree/build/prime-list.txt" "$target/tree/build/prime-list.json" artifacts/
+          cp "$target/userdata/userdata-root.json" artifacts/
+          zstd -T0 -3 --sparse "$target/userdata/userdata-root.img" -o artifacts/userdata-root.img.zst
+      - name: Write summary
+        run: |
+          target=UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos
+          {
+            echo '## sheng macOS 27.3 images'
+            echo ''
+            echo '| file | bytes |'
+            echo '| --- | --- |'
+            for f in artifacts/boot.img artifacts/payload.img artifacts/kernel.macho artifacts/data.dbr artifacts/userdata-root.img.zst; do
+              echo "| $(basename "$f") | $(stat -f %z "$f") |"
+            done
+            echo ''
+            echo 'Flash file: `boot.img` plus `userdata-root.img` (decompress the `.zst` first).'
+            echo 'The macOS administrator password is in `lab-password.txt` of this artifact.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sheng-macos-27
+          path: artifacts/
+          compression-level: 0
+          retention-days: 1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: build-logs
+          path: |
+            UniXNU/out/sheng/*/*/logs/*.log
+            UniXNU/out/sheng/*/*/tree/build/adreno-metal-bridge/build-*.log
+            UniXNU/out/sheng/*/*/tree/build/prime-list.*
+            UniXNU/out/sheng/*/*/tree/build/sheng-source-storage/*.log
+            UniXNU/out/sheng/*/*/tree/build/sheng-source-storage/*.command.json
+          retention-days: 1
+      - name: Save build inputs
+        if: always() && steps.build-images.outcome == 'success' && steps.build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          key: sheng-macos27-build-v1-${{ runner.os }}-${{ github.run_id }}
+          path: |
+            UniXNU/out/feeds
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/gpu-reference
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/mesa-work
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/adreno-metal-bridge
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/m2v-target
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/mesa-tu-macos27
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/data.dbr
+            device/drivers/Ath12kWifi/deps
+            device/.cache/firmware
+      - name: Save kernel compile records
+        if: always() && steps.build-images.outcome == 'success' && steps.kernel-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.kernel-sdk.outputs.key }}-${{ github.run_id }}
+          path: |
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/xnu-inputs.json
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/fakeroot
+            UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/xnu

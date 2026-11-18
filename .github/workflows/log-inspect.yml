@@ -9,7 +9,7 @@ on:
 
 permissions:
   actions: read
-  contents: read
+  contents: write
 
 jobs:
   inspect:
@@ -27,3 +27,14 @@ jobs:
           find logs -type f | sort | head -80
           for f in $(find logs -name prelink.log); do echo "=== $f"; cat "$f"; done
           for f in $(find logs -name kernel.log); do echo "=== tail $f"; tail -40 "$f"; done
+      - name: Commit inspected logs
+        run: |
+          f=$(find logs -name prelink.log | head -1)
+          cp "$f" inspected-prelink.log
+          k=$(find logs -name kernel.log | head -1)
+          tail -80 "$k" > inspected-kernel-tail.log
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add inspected-prelink.log inspected-kernel-tail.log
+          git commit -m 'capture run 9 prelink and kernel logs'
+          git push

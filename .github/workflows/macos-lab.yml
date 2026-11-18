@@ -121,6 +121,33 @@ jobs:
           rustup toolchain install 1.98.0 --profile minimal --component rust-src
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
+      - name: Prime locked Wi-Fi sources
+        run: |
+          python3 - <<'PYTHON'
+          import json, shutil, subprocess
+          from pathlib import Path
+          root = Path('device/drivers/Ath12kWifi')
+          lock = json.loads((root / 'tools/source-lock.json').read_text())
+          for name in ('linux', 'freebsd'):
+              source = lock[name]
+              directory = root / 'deps' / name
+              if directory.exists():
+                  shutil.rmtree(directory)
+              directory.parent.mkdir(parents=True, exist_ok=True)
+              if name == 'linux':
+                  subprocess.run(['git', 'clone', '-q', '--depth', '1', '--branch', source['ref'],
+                                  '--filter=blob:none', '--sparse', source['url'], str(directory)], check=True)
+              else:
+                  subprocess.run(['git', 'clone', '-q', '--depth', '1', '--filter=blob:none', '--sparse',
+                                  '--no-checkout', source['url'], str(directory)], check=True)
+                  subprocess.run(['git', '-C', str(directory), 'fetch', '-q', '--depth', '1',
+                                  '--filter=blob:none', 'origin', source['commit']], check=True)
+                  subprocess.run(['git', '-C', str(directory), 'checkout', '-q', '--detach', 'FETCH_HEAD'], check=True)
+              revision = subprocess.check_output(['git', '-C', str(directory), 'rev-parse', 'HEAD'], text=True).strip()
+              print(name, revision)
+              if revision != source['commit']:
+                  raise SystemExit(f'{name}: expected {source["commit"]}, found {revision}')
+          PYTHON
       - name: Identify kernel SDK cache
         id: kernel-sdk
         run: |

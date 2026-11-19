@@ -19,7 +19,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-logs
-          run-id: 44420116666
+          run-id: 44427690964
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: logs
       - name: Show prelink and kernel tails
@@ -36,5 +36,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add inspected-prelink.log inspected-kernel-tail.log
-          git commit -m 'capture run 10 prelink and kernel logs'
+          git commit -m 'capture run 11 prelink and kernel logs'
           git push

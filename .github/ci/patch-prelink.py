@@ -62,6 +62,25 @@ def patch_layout(source):
     return True
 
 
+def patch_segmented():
+    path = Path('UniXNU/kits/XnuPrelink/fileset_segmented.py')
+    if not path.is_file():
+        print('fileset_segmented.py missing', path)
+        return False
+    text = path.read_text()
+    old = '            source = self.layout.segment(name)\n'
+    new = "            source = self.layout.segment('__TEXT') if name == '__NATIVE_TEXT' else self.layout.segment(name)\n"
+    if new in text:
+        print('segmented root command already present', path)
+        return True
+    if old not in text:
+        print('segmented root command line not found', path)
+        return False
+    path.write_text(text.replace(old, new, 1))
+    print('segmented root command added', path)
+    return True
+
+
 def patch_cli():
     needle = "    modules = prepare(ctx, steps + (['kernel'] if 'prelink' in steps else []))\n"
     hook = needle + """    patch = os.environ.get('UNIXNU_PRELINK_PATCH')
@@ -122,11 +141,21 @@ def main():
         raise SystemExit(f'source file missing: {source}')
     if not patch_layout(source):
         raise SystemExit('used fileset_layout.py was not patched')
+    if not patch_segmented():
+        raise SystemExit('used fileset_segmented.py was not patched')
     source_text = source.read_text()
     for path in Path('UniXNU/out').rglob('fileset_layout.py'):
         try:
             path.write_text(source_text)
             print('synced layout', path)
+        except OSError as error:
+            print('sync failed', path, error)
+    segmented_source = Path('UniXNU/kits/XnuPrelink/fileset_segmented.py')
+    segmented_text = segmented_source.read_text()
+    for path in Path('UniXNU/out').rglob('fileset_segmented.py'):
+        try:
+            path.write_text(segmented_text)
+            print('synced segmented', path)
         except OSError as error:
             print('sync failed', path, error)
     for cache in list(Path('UniXNU/kits/XnuPrelink').rglob('__pycache__')) + list(Path('UniXNU/out').rglob('__pycache__')):

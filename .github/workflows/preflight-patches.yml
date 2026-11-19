@@ -1,7 +1,8 @@
 name: preflight-patches
-# Fast check of the 82b847c + sleep-cherry-pick direction: fetch the two sleep commits onto the
-# kernel revision the device tree is written against, then apply every board patch in order.
-# No toolchain, no compile: ~3 minutes instead of an 80-minute blind build.
+# Fast check of the 82b847c + sleep-cherry-pick direction: fetch main, cherry-pick the two sleep
+# commits onto the kernel revision the device tree is written against, then apply every board
+# patch in order. No toolchain, no compile: a few minutes instead of an 80-minute blind build.
+# The transcript is uploaded as an artifact so it can be read without a token.
 on:
   push:
     paths:
@@ -30,16 +31,19 @@ jobs:
       - name: overlay the two sleep commits
         working-directory: kernel
         run: |
+          set +e
+          exec > >(tee -a "$GITHUB_WORKSPACE/preflight.log") 2>&1
           git config user.email ci@local
           git config user.name ci
-          git log --oneline -1 90873392 2>/dev/null || true
-          for c in 90873392 099c72fd; do
-            git fetch --depth 200 origin "$c" || git fetch origin "$c"
-          done
+          git fetch --filter=blob:none origin main:refs/remotes/origin/main
+          echo "fetch rc=$?"
+          git log --oneline -1 90873392
           git cherry-pick 90873392 099c72fd
+          echo "cherry-pick rc=$?"
           git log --oneline -3
       - name: apply every board patch in order
         run: |
+          exec >> "$GITHUB_WORKSPACE/preflight.log" 2>&1
           cd kernel
           failed=0
           while IFS= read -r name; do
@@ -54,8 +58,17 @@ jobs:
               echo "ok   $name"
             else
               echo "FAIL $name"
-              sed -n '1,6p' err.txt
+              sed -n '1,8p' err.txt
               failed=1
             fi
           done < ../device/patches/xnu-12377/series
+          echo "summary: ${failed}" >> "$GITHUB_WORKSPACE/preflight.log"
           exit $failed
+      - name: transcript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preflight
+          retention-days: 1
+          path: preflight.log
+          if-no-files-found: error

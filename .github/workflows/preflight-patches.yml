@@ -2,8 +2,8 @@ name: preflight-patches
 # Fast check of the 82b847c + sleep-cherry-pick direction. The kernel repo has no osfmk/ tree:
 # XNU is fetched into .cache/xnu-work by the real build, so board patches can only be proven
 # there. What this proves in a few minutes is the cherry-pick itself, including the submodule
-# pointer conflict on drivers/ArmCpu, which is the part that would otherwise waste a 70-minute
-# build. Transcript is uploaded as an artifact so it can be read without a token.
+# pointer conflict on drivers/ArmCpu. The transcript is committed back to status/ so it can be
+# read without a token or an API call.
 on:
   push:
     paths:
@@ -11,13 +11,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   patches:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - uses: actions/checkout@v4
+        with:
+          path: self
       - uses: actions/checkout@v4
         with:
           repository: UniXNU/UniXNU
@@ -59,12 +62,18 @@ jobs:
           done
           echo "HEAD: $(git log --oneline -1)"
           echo "ArmCpu: $(git ls-tree HEAD drivers/ArmCpu)"
-          git status --short | head -20
-      - name: transcript
+      - name: publish transcript
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: preflight
-          retention-days: 1
-          path: preflight.log
-          if-no-files-found: error
+        working-directory: self
+        run: |
+          mkdir -p status
+          cp "$GITHUB_WORKSPACE/preflight.log" status/preflight.log 2>/dev/null || true
+          {
+            echo "run: $GITHUB_RUN_ID"
+            echo "commit: $GITHUB_SHA"
+            echo "conclusion: ${{ job.status }}"
+            echo "when: $(date -u)"
+          } > status/preflight.txt
+          git add status/preflight.log status/preflight.txt
+          git -c user.email=ci@local -c user.name=ci commit -m "preflight: $GITHUB_RUN_ID" || true
+          git push

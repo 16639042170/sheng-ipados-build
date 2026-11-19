@@ -1,8 +1,9 @@
 name: package-sleep-27
 
-# scripts/package.sh of the pinned device checkout on a macOS runner. Same shape as the device
-# repository's own package.yml, with the UniXNU/uefi-sheng pins advanced to 2026-11-18 and
-# --kernel-arg platform-sleep=1 added so the kernel arm actually enters sleep.
+# scripts/package.sh of the pinned device checkout on a macOS runner, with the UniXNU 2026-11-18
+# pin (ArmCpu sleep #299 + AdrenoMetal sleep) and --kernel-arg platform-sleep=1. Upstream pins
+# the R2507 translator whose copied.rs defines read_pages only for linux/macos, so the iOS
+# target fails to compile; one step widens that cfg to ios before the bridge builds.
 on:
   push:
     paths:
@@ -123,6 +124,24 @@ jobs:
               path.write_bytes(data)
           if not path.is_file() and os.environ.get('INIT_DATA', 'false') != 'true':
               raise SystemExit('No saved seed. Supply the ORIGINAL seed for an existing installation, or select init_data for a FIRST installation')
+          PY
+      - name: let the Metal bridge read its own pages on iOS
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          script = pathlib.Path('UniXNU/scripts/build-adreno-metal-bridge.py')
+          text = script.read_text()
+          marker = "out = ROOT / 'build/adreno-metal-bridge'"
+          addition = (
+              "copied = SOURCE / 'crates/metal2vulkan-runtime/src/copied.rs'\n"
+              "copied_text = copied.read_text()\n"
+              "copied_text = copied_text.replace('#[cfg(target_os = \"macos\")]\\npub(crate) fn read_pages', '#[cfg(any(target_os = \"macos\", target_os = \"ios\"))]\\npub(crate) fn read_pages')\n"
+              "copied.write_text(copied_text)\n"
+          )
+          if 'copied_text = copied.read_text()' not in text:
+              text = text.replace(marker, addition + marker, 1)
+          script.write_text(text)
+          print('patched build-adreno-metal-bridge.py:', 'copied_text' in text)
           PY
       - name: package
         working-directory: device

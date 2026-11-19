@@ -1,6 +1,12 @@
 import os
 import re
+import subprocess
 from pathlib import Path
+
+submodule = Path('UniXNU/kits/XnuPrelink')
+if submodule.is_dir():
+    subprocess.run(['git', '-C', str(submodule), 'reset', '--hard'], check=False)
+    print('reset XnuPrelink to pinned source')
 
 HEAD = r"        self\.mapped = \{'__TEXT': min\(%s, room // 0x1000 \* 0x1000\)\}\n        if used > self\.mapped\['__TEXT'\]:\n"
 ROOMS = [
@@ -38,7 +44,7 @@ ROOT_REPLACEMENT = """        ordered = sorted((s['va'], s['va'] + s['size']) fo
 found = False
 for path in Path('UniXNU').rglob('fileset_layout.py'):
     text = path.read_text()
-    if "self.cursor = align(max(self.cursor, self.end('__TEXT_EXEC') - self.cache.base))" in text:
+    if "self.cursor = align(max(self.cursor, self.end('__TEXT_EXEC') - self.cache.base))" in text and '__NATIVE_TEXT' in text:
         print('already new layout', path)
         found = True
         continue

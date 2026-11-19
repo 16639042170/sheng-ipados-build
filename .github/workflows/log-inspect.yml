@@ -19,12 +19,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-logs
-          run-id: 44445815995
+          run-id: 44458810393
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: logs
       - name: Show prelink tail
         run: |
-          for f in $(find logs -name prelink.log); do echo "=== $f"; tail -120 "$f"; done
+          for f in $(find logs -name prelink.log); do echo "=== $f"; tail -160 "$f"; done
       - name: Commit inspected logs
         run: |
           f=$(find logs -name prelink.log | head -1)
@@ -32,5 +32,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add inspected-prelink.log
-          git commit -m 'capture run 14 prelink log'
+          git commit -m 'capture run 15 prelink log'
           git push

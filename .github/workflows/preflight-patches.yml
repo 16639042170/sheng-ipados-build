@@ -1,8 +1,8 @@
 name: preflight-patches
 # Fast check of the 82b847c + sleep-cherry-pick direction: fetch main, cherry-pick the two sleep
-# commits onto the kernel revision the device tree is written against, then apply every board
-# patch in order. No toolchain, no compile: a few minutes instead of an 80-minute blind build.
-# The transcript is uploaded as an artifact so it can be read without a token.
+# commits (both may be merges, so take their mainline) onto the kernel revision the device tree
+# is written against, then apply every board patch inside the xnu source tree. No toolchain, no
+# compile: a few minutes instead of an 80-minute blind build. Transcript is an artifact.
 on:
   push:
     paths:
@@ -15,7 +15,7 @@ permissions:
 jobs:
   patches:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,6 +23,7 @@ jobs:
           ref: 82b847c4ac3f68a57024b3082ffa3a03442defd9
           path: kernel
           fetch-depth: 0
+          submodules: recursive
       - uses: actions/checkout@v4
         with:
           repository: UniXNU/UniXNU-sheng
@@ -37,14 +38,25 @@ jobs:
           git config user.name ci
           git fetch --filter=blob:none origin main:refs/remotes/origin/main
           echo "fetch rc=$?"
-          git log --oneline -1 90873392
-          git cherry-pick 90873392 099c72fd
-          echo "cherry-pick rc=$?"
+          for c in 90873392b74445c75a15d48769bd570322b8136a 099c72fd; do
+            git log --oneline -1 "$c"
+            if [ "$(git rev-list --parents -n1 "$c" | wc -w)" -gt 2 ]; then
+              git cherry-pick -m 1 "$c"
+            else
+              git cherry-pick "$c"
+            fi
+            echo "cherry-pick $c rc=$?"
+          done
           git log --oneline -3
       - name: apply every board patch in order
         run: |
           exec >> "$GITHUB_WORKSPACE/preflight.log" 2>&1
-          cd kernel
+          xnu=$(dirname "$(dirname "$(find kernel -path '*/osfmk/kern' -type d -print -quit)")]")]
+          xnu=$(dirname "$(find kernel -path '*/osfmk/kern' -type d -print -quit)")..
+          xnu=$(find kernel -path '*/osfmk/kern' -type d -print -quit)
+          xnu=$(dirname "$(dirname "$xnu")")
+          echo "xnu root: $xnu"
+          cd "$xnu"
           failed=0
           while IFS= read -r name; do
             [ -z "$name" ] && continue
@@ -52,7 +64,7 @@ jobs:
             case "$name" in
               sheng-startup-failure-log.patch|sheng-process-exit-log.patch) echo "skip $name"; continue;;
             esac
-            patch="../device/patches/xnu-12377/$name"
+            patch="$GITHUB_WORKSPACE/device/patches/xnu-12377/$name"
             if git apply --check "$patch" 2>err.txt; then
               git apply "$patch"
               echo "ok   $name"
@@ -61,8 +73,8 @@ jobs:
               sed -n '1,8p' err.txt
               failed=1
             fi
-          done < ../device/patches/xnu-12377/series
-          echo "summary: ${failed}" >> "$GITHUB_WORKSPACE/preflight.log"
+          done < "$GITHUB_WORKSPACE/device/patches/xnu-12377/series"
+          echo "summary: $failed" >> "$GITHUB_WORKSPACE/preflight.log"
           exit $failed
       - name: transcript
         if: always()

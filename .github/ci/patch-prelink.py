@@ -114,7 +114,7 @@ for path in Path('UniXNU').rglob('scripts/unixnu/tree.py'):
     print('tree hook added', path)
     tree_patched = True
 if not tree_patched:
-    raise SystemExit('no tree.py hook added')
+    print('tree hook not present; cli hook will patch after prepare')
 
 environment = os.environ.get('GITHUB_ENV')
 if environment:

@@ -17,14 +17,28 @@ jobs:
           ref: c8f92b208068eeaa4cd2b0f592671f04ee70076e
           path: device
           submodules: recursive
-      - name: fetch sources and capture the error
+      - name: pin the locked source commits and fetch
         working-directory: device/drivers/Ath12kWifi
         run: |
           mkdir -p "$GITHUB_WORKSPACE/diag"
           set +e
           {
-            echo "pwd=$(pwd)"
-            git submodule status || true
+            python3 - <<'PY'
+          import json, os, subprocess
+          lock = json.load(open('tools/source-lock.json'))
+          for name in ('linux', 'freebsd'):
+              source, directory = lock[name], 'deps/' + name
+              if not os.path.isdir(directory):
+                  subprocess.run(['git', 'clone', '--depth', '1', '--branch', source['ref'], '--filter=blob:none',
+                                  '--sparse', source['url'], directory], check=True)
+              head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
+              print(name, 'cloned HEAD', head, 'locked', source['commit'])
+              if head != source['commit']:
+                  subprocess.run(['git', '-C', directory, 'fetch', '--depth', '1', 'origin', source['commit']], check=True)
+                  subprocess.run(['git', '-C', directory, 'checkout', '--detach', 'FETCH_HEAD'], check=True)
+                  head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
+                  print(name, 'pinned HEAD', head)
+          PY
             python3 tools/fetch-sources.py
           } > "$GITHUB_WORKSPACE/diag/fetch.log" 2>&1
           echo "rc=$?" >> "$GITHUB_WORKSPACE/diag/fetch.log"

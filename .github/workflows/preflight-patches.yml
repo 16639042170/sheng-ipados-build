@@ -51,10 +51,8 @@ jobs:
       - name: apply every board patch in order
         run: |
           exec >> "$GITHUB_WORKSPACE/preflight.log" 2>&1
-          xnu=$(dirname "$(dirname "$(find kernel -path '*/osfmk/kern' -type d -print -quit)")]")]
-          xnu=$(dirname "$(find kernel -path '*/osfmk/kern' -type d -print -quit)")..
-          xnu=$(find kernel -path '*/osfmk/kern' -type d -print -quit)
-          xnu=$(dirname "$(dirname "$xnu")")
+          kern=$(find kernel -path '*/osfmk/kern' -type d -print -quit)
+          xnu=$(dirname "$(dirname "$kern")")
           echo "xnu root: $xnu"
           cd "$xnu"
           failed=0

@@ -18,5 +18,5 @@ Traceback (most recent call last):
     self.validate()
     ~~~~~~~~~~~~~^^
   File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 250, in validate
-    raise ValueError('Root mappings overlap')
-ValueError: Root mappings overlap
+    raise ValueError('Root mappings overlap: ' + repr([(s['name'], hex(s['va']), hex(s['size'])) for s in sorted((s for s in self.roots.values() if s['size']), key=lambda s: s['va'])]))
+ValueError: Root mappings overlap: [('__TEXT', '0xfffffff007004000', '0x8000'), ('__PRELINK_TEXT', '0xfffffff00700c000', '0xdb8000'), ('__DATA_CONST', '0xfffffff007dc4000', '0xd08000'), ('__DATA_SPTM', '0xfffffff008acc000', '0x74000'), ('__TEXT_EXEC', '0xfffffff008b40000', '0x3a18000'), ('__NATIVE_TEXT', '0xfffffff00c4bc000', '0x3c8000'), ('__DATA', '0xfffffff00c884000', '0x4bc000'), ('__LINKEDIT', '0xfffffff00cd40000', '0x2750000'), ('__PRELINK_INFO', '0xfffffff00f490000', '0x3c8000'), ('__KLDDATA', '0xfffffff00f858000', '0x8000'), ('__BOOTDATA', '0xfffffff00f860000', '0xd8000')]

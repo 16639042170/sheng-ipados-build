@@ -11,8 +11,9 @@ name: package-sleep-27
 # kernel, so the package tree (a git archive) has no drivers/QcomGeniSpi: its headers are copied
 # next to TouchProbe and every build-script reference is rewritten to the workspace submodule.
 # Board sources compile with -Werror and some of their file-scope constants and helpers are only
-# read by blocks an iOS build compiles out; those are marked maybe_unused. package.sh is teed
-# into build-logs so a silent death still leaves its last lines and a df snapshot.
+# read by blocks an iOS build compiles out; those declarations are prefixed with maybe_unused.
+# package.sh is teed into build-logs so a silent death still leaves its last lines and a df
+# snapshot.
 on:
   push:
     paths:
@@ -207,19 +208,18 @@ jobs:
         run: |
           python3 - <<'PY'
           import pathlib, re
-          types = 'bool|int|void|uint32_t|uint64_t|int32_t|int64_t|size_t|IOReturn|const char \*'
+          types = r'(?:static\s+)?(?:bool|int|void|uint32_t|uint64_t|int32_t|int64_t|size_t|IOReturn|const char \*)\s+\w+\s*\('
           for cpp in sorted(pathlib.Path('device/package').glob('*.cpp')):
               text = cpp.read_text()
               before = text
               text = re.sub(r'^constexpr ', '[[maybe_unused]] constexpr ', text, flags=re.M)
-              text = re.sub(r'^(' + types + r')\s+(\w+)(\s*\()', r'\1 [[maybe_unused]] \2\3', text, flags=re.M)
-              text = re.sub(r'^(static\s+)(' + types + r')\s+(\w+)(\s*\()', r'\1\2 [[maybe_unused]] \3\4', text, flags=re.M)
+              text = re.sub(r'^(' + types + r')', r'[[maybe_unused]] \1', text, flags=re.M)
               text = re.sub(r'^(static const char \w+\[\])(.*)$', r'\1 __attribute__((unused))\2', text, flags=re.M)
               if text != before:
                   cpp.write_text(text)
                   print(cpp.name, 'patched')
           PY
-          grep -c "maybe_unused" device/package/ShengSleep.cpp
+          grep -c "maybe_unused" device/package/ShengSleep.cpp device/package/SourceStorage.cpp
       - name: drop the two boot-log patches that no longer apply
         run: |
           python3 - <<'PY'

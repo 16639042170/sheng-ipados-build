@@ -1,0 +1,34 @@
+name: debug prelink patch
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [macos-lab]
+    paths:
+      - .github/workflows/debug-patch.yml
+      - .github/ci/**
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU
+          ref: 563595abedfdfa413ad583b66b6176d82007e633
+          path: UniXNU
+          submodules: recursive
+      - name: Run patch and report
+        run: |
+          python3 .github/ci/patch-prelink.py | tee patch-report.txt
+          echo '' >> patch-report.txt
+          find UniXNU -name fileset_layout.py -print >> patch-report.txt
+          for f in $(find UniXNU -name fileset_layout.py); do
+            echo "=== $f" >> patch-report.txt
+            grep -n "__NATIVE_TEXT|self.info|Root mappings overlap" "$f" >> patch-report.txt || true
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: patch-debug
+          path: patch-report.txt

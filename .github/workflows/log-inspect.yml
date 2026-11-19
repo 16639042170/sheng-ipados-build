@@ -19,17 +19,17 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-logs
-          run-id: 44466962242
+          run-id: 44474638665
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: logs
       - name: Show files and tails
         run: |
           find logs -type f -maxdepth 3 -printf '%p %s\n'
-          for f in $(find logs -type f); do echo "=== $f"; tail -200 "$f"; done > build-logs.txt
+          for f in $(find logs -type f); do echo "=== $f"; tail -240 "$f"; done > build-logs.txt
       - name: Commit inspected logs
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add build-logs.txt
-          git commit -m 'capture all run 16 build logs'
+          git commit -m 'capture all run 17 build logs'
           git push

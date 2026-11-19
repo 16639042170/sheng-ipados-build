@@ -287,14 +287,15 @@ jobs:
           """
           replacement = """        if used > self.mapped['__TEXT']:
                       size = self.segment('__TEXT')['size']
-                      root = self.roots.pop('__PRELINK_INFO')
-                      self.info = root
-                      self.roots['__NATIVE_TEXT'] = dict(root, name='__NATIVE_TEXT')
-                      self.reserve('__TEXT', root['va'] + root['size'] - size)
-                      room = self.room('__NATIVE_TEXT', self.placements['__TEXT'])
-                      self.mapped = {'__TEXT': min(size, room // 0x1000 * 0x1000)}
-                      if used > self.mapped['__TEXT']:
-                          raise ValueError(f'No room for {used:#x} bytes in __NATIVE_TEXT: {self.mapped["__TEXT"]:#x} bytes of whole pages are free')
+                      self.info = self.roots['__PRELINK_INFO']
+                      self.cursor = align(max(self.cursor, self.end('__TEXT_EXEC') - self.cache.base))
+                      self.cursor = align(max(self.cursor, max(root['va'] + root['size'] - self.cache.base for root in self.roots.values() if root['size'])))
+                      root = dict(name='__NATIVE_TEXT', va=self.cache.base + self.cursor,
+                                  size=align(size), fileoff=self.cursor, filesize=align(size))
+                      self.roots['__NATIVE_TEXT'] = root
+                      self.reserve('__TEXT', root['va'])
+                      self.cursor = align(self.cursor + size)
+                      self.mapped = {'__TEXT': size}
           """
           info_needle = """        info = self.roots['__PRELINK_INFO']
                   info['va'] = self.allocate(info['size'])

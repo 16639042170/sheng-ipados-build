@@ -304,7 +304,15 @@ jobs:
                   info['va'] = self.allocate(info['size'])
                   self.roots['__PRELINK_INFO'] = info
           """
-          pairs = ((needle, replacement), (info_needle, info_replacement))
+          root_needle = """        ordered = sorted((s['va'], s['va'] + s['size']) for s in self.roots.values() if s['size'])
+                  if any(a[1] > b[0] for a, b in zip(ordered, ordered[1:])):
+                      raise ValueError('Root mappings overlap')
+          """
+          root_replacement = """        ordered = sorted((s['va'], s['va'] + s['size']) for s in self.roots.values() if s['size'])
+                  if any(a[1] > b[0] for a, b in zip(ordered, ordered[1:])):
+                      raise ValueError('Root mappings overlap: ' + repr([(s['name'], hex(s['va']), hex(s['size'])) for s in sorted((s for s in self.roots.values() if s['size']), key=lambda s: s['va'])]))
+          """
+          pairs = ((needle, replacement), (info_needle, info_replacement), (root_needle, root_replacement))
           patched = False
           for path in Path('UniXNU').rglob('fileset_layout.py'):
               text = path.read_text()

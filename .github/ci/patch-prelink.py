@@ -1,5 +1,4 @@
 import os
-import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -19,7 +18,7 @@ def patch_layout(source):
         room = self.room('__PRELINK_TEXT', self.placements['__TEXT'])
         self.mapped = {'__TEXT': min(self.segment('__TEXT')['size'], room // 0x1000 * 0x1000)}
         if used > self.mapped['__TEXT']:
-            raise ValueError(f'No room for {used:#x} bytes in __PRELINK_TEXT: {self.mapped["__TEXT" ]:#x} bytes of whole pages are free')
+            raise ValueError(f'No room for {used:#x} bytes in __PRELINK_TEXT: {self.mapped["__TEXT"]:#x} bytes of whole pages are free')
 """
     if old not in text:
         print('official __TEXT hole block not found', source)

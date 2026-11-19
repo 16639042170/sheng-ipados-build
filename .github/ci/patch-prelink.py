@@ -1,9 +1,11 @@
 import re
 from pathlib import Path
 
-ROOMS = re.compile(
-    r"(?P<head>        self\.mapped = \{'__TEXT': min\(.*?\)\}\n        if used > self\.mapped\['__TEXT'\]:\n)(?P<body>.*?)(?=        const = self\.roots\['__DATA_CONST'\])",
-    re.S)
+HEAD = r"        self\.mapped = \{'__TEXT': min\(%s, room // 0x1000 \* 0x1000\)\}\n        if used > self\.mapped\['__TEXT'\]:\n"
+ROOMS = [
+    re.compile(HEAD % r"self\.segment\('__TEXT'\)\['size'\]" + r"(?P<body>.*?)(?=        const = self\.roots\['__DATA_CONST'\])", re.S),
+    re.compile(HEAD % r"size" + r"(?P<body>.*?)(?=        const = self\.roots\['__DATA_CONST'\])", re.S),
+]
 NEW_BODY = '''            size = self.segment('__TEXT')['size']
             self.info = self.roots['__PRELINK_INFO']
             self.cursor = align(max(self.cursor, self.end('__TEXT_EXEC') - self.cache.base))
@@ -39,11 +41,17 @@ for path in Path('UniXNU').rglob('fileset_layout.py'):
         print('already new layout', path)
         found = True
         continue
-    match = ROOMS.search(text)
-    if not match:
-        print('room block not found', path)
+    replaced = False
+    for rooms in ROOMS:
+        match = rooms.search(text)
+        if not match:
+            continue
+        text = text[:match.start()] + match.group(0)[:match.start('body')-match.start(0)] + NEW_BODY + text[match.end():]
+        replaced = True
+        break
+    if not replaced:
+        print('fallback block not found', path)
         continue
-    text = text[:match.start()] + match.group('head') + NEW_BODY + text[match.end():]
     if INFO_NEEDLE in text:
         text = text.replace(INFO_NEEDLE, INFO_REPLACEMENT, 1)
     if ROOT_NEEDLE in text:

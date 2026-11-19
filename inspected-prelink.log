@@ -14,6 +14,9 @@ Traceback (most recent call last):
   File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_segmented.py", line 35, in place_kernel
     self.layout = Layout(self.cache, self.native, self.closure)
                   ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 99, in __init__
-    raise ValueError(f'No room for {used:#x} bytes in __PRELINK_TEXT: {self.mapped["__TEXT"]:#x} bytes of whole pages are free')
-ValueError: No room for 0x1db1e8 bytes in __PRELINK_TEXT: 0x1db000 bytes of whole pages are free
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 154, in __init__
+    self.validate()
+    ~~~~~~~~~~~~~^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 239, in validate
+    raise ValueError(f'Native {segment["name"]} overlaps a retained segment')
+ValueError: Native __TEXT_EXEC overlaps a retained segment

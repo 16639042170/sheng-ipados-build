@@ -38,7 +38,6 @@ ld: warning: -segment_order of __LINKEDIT is ignored, the segment must be ordere
        DSYMUTIL mach.development.bcm2837.dSYM
           STRIP mach.development.bcm2837
         LIBTOOL mach.development.bcm2837.a
-built kernel at /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837//mach.development.bcm2837
 libtool: warning: 'exclaves_aoe.o' has no symbols
 libtool: warning: 'exclaves_conclave.o' has no symbols
 libtool: warning: 'exclaves_driverkit.o' has no symbols
@@ -77,4 +76,5 @@ libtool: warning: 'cpu_copy_in_cksum_gen.o' has no symbols
 libtool: warning: 'ctrr_test_sysctl.o' has no symbols
 libtool: warning: 'IOCommandQueue.cpo' has no symbols
 libtool: warning: 'AppleARMSMP.cpo' has no symbols
+built kernel at /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837//mach.development.bcm2837
 Source kernel POST integrity field populated; runtime selftests are still required

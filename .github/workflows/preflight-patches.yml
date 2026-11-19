@@ -1,8 +1,9 @@
 name: preflight-patches
-# Fast check of the 82b847c + sleep-cherry-pick direction: fetch main, cherry-pick the two sleep
-# commits (both may be merges, so take their mainline) onto the kernel revision the device tree
-# is written against, then apply every board patch inside the xnu source tree. No toolchain, no
-# compile: a few minutes instead of an 80-minute blind build. Transcript is an artifact.
+# Fast check of the 82b847c + sleep-cherry-pick direction. The kernel repo has no osfmk/ tree:
+# XNU is fetched into .cache/xnu-work by the real build, so board patches can only be proven
+# there. What this proves in a few minutes is the cherry-pick itself, including the submodule
+# pointer conflict on drivers/ArmCpu, which is the part that would otherwise waste a 70-minute
+# build. Transcript is uploaded as an artifact so it can be read without a token.
 on:
   push:
     paths:
@@ -24,12 +25,7 @@ jobs:
           path: kernel
           fetch-depth: 0
           submodules: recursive
-      - uses: actions/checkout@v4
-        with:
-          repository: UniXNU/UniXNU-sheng
-          ref: c8f92b208068eeaa4cd2b0f592671f04ee70076e
-          path: device
-      - name: overlay the two sleep commits
+      - name: cherry-pick the sleep commits
         working-directory: kernel
         run: |
           set +e
@@ -39,41 +35,31 @@ jobs:
           git fetch --filter=blob:none origin main:refs/remotes/origin/main
           echo "fetch rc=$?"
           for c in 90873392b74445c75a15d48769bd570322b8136a 099c72fd; do
-            git log --oneline -1 "$c"
-            if [ "$(git rev-list --parents -n1 "$c" | wc -w)" -gt 2 ]; then
+            echo "== $c: $(git log --oneline -1 $c)"
+            if [ "$(git rev-list --parents -n1 $c | wc -w)" -gt 2 ]; then
               git cherry-pick -m 1 "$c"
             else
               git cherry-pick "$c"
             fi
-            echo "cherry-pick $c rc=$?"
-          done
-          git log --oneline -3
-      - name: apply every board patch in order
-        run: |
-          exec >> "$GITHUB_WORKSPACE/preflight.log" 2>&1
-          kern=$(find kernel -path '*/osfmk/kern' -type d -print -quit)
-          xnu=$(dirname "$(dirname "$kern")")
-          echo "xnu root: $xnu"
-          cd "$xnu"
-          failed=0
-          while IFS= read -r name; do
-            [ -z "$name" ] && continue
-            case "$name" in \#*) continue;; esac
-            case "$name" in
-              sheng-startup-failure-log.patch|sheng-process-exit-log.patch) echo "skip $name"; continue;;
-            esac
-            patch="$GITHUB_WORKSPACE/device/patches/xnu-12377/$name"
-            if git apply --check "$patch" 2>err.txt; then
-              git apply "$patch"
-              echo "ok   $name"
-            else
-              echo "FAIL $name"
-              sed -n '1,8p' err.txt
-              failed=1
+            rc=$?
+            echo "cherry-pick rc=$rc"
+            if [ $rc -ne 0 ]; then
+              for sub in $(git diff --name-only --diff-filter=U); do
+                echo "resolving submodule conflict: $sub"
+                pointer=$(git ls-tree "$c" -- "$sub" | awk '{print $3}')
+                echo "pointer $pointer"
+                git -C "$sub" fetch --depth 1 origin "$pointer" || git -C "$sub" fetch origin
+                git -C "$sub" checkout "$pointer"
+                git add "$sub"
+              done
+              git status --short
+              git -c core.editor=true cherry-pick --continue
+              echo "continue rc=$?"
             fi
-          done < "$GITHUB_WORKSPACE/device/patches/xnu-12377/series"
-          echo "summary: $failed" >> "$GITHUB_WORKSPACE/preflight.log"
-          exit $failed
+          done
+          echo "HEAD: $(git log --oneline -1)"
+          echo "ArmCpu: $(git ls-tree HEAD drivers/ArmCpu)"
+          git status --short | head -20
       - name: transcript
         if: always()
         uses: actions/upload-artifact@v4

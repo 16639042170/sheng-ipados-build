@@ -6,8 +6,9 @@ name: package-sleep-27
 # target fails to compile; one step widens that cfg to ios. The Ath12kWifi submodule keeps its
 # supplicant sources out of the checkout and its FreeBSD lock has drifted from releng/15.1;
 # one step clones and checks out the locked commits. Touch/Keyboard/Video firmware comes from
-# proprietary-files.txt's mirror. package.sh is teed into build-logs so a silent death
-# (runner memory or disk) still leaves its last lines and a df snapshot.
+# proprietary-files.txt's mirror. Two boot-log diagnostic patches no longer apply to this
+# kernel and are dropped from the series; the sleep patch stays. package.sh is teed into
+# build-logs so a silent death still leaves its last lines and a df snapshot.
 on:
   push:
     paths:
@@ -169,6 +170,16 @@ jobs:
               text = text.replace(marker, addition + marker, 1)
           script.write_text(text)
           print('patched build-adreno-metal-bridge.py:', 'copied_text' in text)
+          PY
+      - name: drop the two boot-log patches that no longer apply
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          path = pathlib.Path('device/patches/xnu-12377/series')
+          dropped = ('sheng-startup-failure-log.patch', 'sheng-process-exit-log.patch')
+          kept = [line for line in path.read_text().splitlines() if not any(name in line for name in dropped)]
+          path.write_text('\n'.join(kept).rstrip('\n') + '\n')
+          print(path.read_text())
           PY
       - name: package
         working-directory: device

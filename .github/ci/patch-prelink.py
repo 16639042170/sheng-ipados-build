@@ -87,6 +87,35 @@ for path in Path('UniXNU').rglob('scripts/unixnu/cli.py'):
 if not cli_patched:
     raise SystemExit('no cli.py hook added')
 
+TREE_NEEDLE = """    components.sync_outputs(ctx, modules)
+    return tree
+"""
+TREE_HOOK = """    components.sync_outputs(ctx, modules)
+    patch = Path(os.environ.get('GITHUB_WORKSPACE', str(ctx.root.parent))) / '.github/ci/patch-prelink.py'
+    if patch.is_file():
+        import subprocess, sys
+        subprocess.run([sys.executable, str(patch)], cwd=str(ctx.root.parent), check=True)
+    return tree
+"""
+tree_patched = False
+for path in Path('UniXNU').rglob('scripts/unixnu/tree.py'):
+    text = path.read_text()
+    if 'PRELINK_PATCH' in text:
+        print('tree hook already present', path)
+        tree_patched = True
+        continue
+    if TREE_NEEDLE not in text:
+        print('tree assemble end not found', path)
+        continue
+    if 'import os' not in text:
+        text = text.replace('import shutil\n', 'import os\nimport shutil\n', 1)
+    text = text.replace(TREE_NEEDLE, TREE_HOOK, 1)
+    path.write_text(text)
+    print('tree hook added', path)
+    tree_patched = True
+if not tree_patched:
+    raise SystemExit('no tree.py hook added')
+
 environment = os.environ.get('GITHUB_ENV')
 if environment:
     with open(environment, 'a', encoding='utf-8') as output:

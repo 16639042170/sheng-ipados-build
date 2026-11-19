@@ -282,24 +282,32 @@ jobs:
         run: |
           python3 - <<'PYTHON'
           from pathlib import Path
-          needle = "        self.reserve('__TEXT', self.hole('__PRELINK_TEXT', self.segment('__TEXT')['size']))\n"
-          replacement = (
-              "        try:\n"
-              "            self.reserve('__TEXT', self.hole('__PRELINK_TEXT', self.segment('__TEXT')['size']))\n"
-              "        except ValueError:\n"
-              "            self.roots['__NATIVE_TEXT'] = dict(self.roots['__PRELINK_INFO'], name='__NATIVE_TEXT')\n"
-              "            self.reserve('__TEXT', self.roots['__NATIVE_TEXT']['va'])\n"
-          )
+          needle = """        if used > self.mapped['__TEXT']:
+                      raise ValueError(f'No room for {used:#x} bytes in __PRELINK_TEXT: {self.mapped["__TEXT"]:#x} bytes of whole pages are free')
+          """
+          replacement = """        if used > self.mapped['__TEXT']:
+                      self.roots['__NATIVE_TEXT'] = dict(self.roots['__PRELINK_INFO'], name='__NATIVE_TEXT')
+                      self.reserve('__TEXT', self.roots['__NATIVE_TEXT']['va'])
+                      room = self.room('__NATIVE_TEXT', self.placements['__TEXT'])
+                      self.mapped = {'__TEXT': min(self.segment('__TEXT')['size'], room // 0x1000 * 0x1000)}
+                      if used > self.mapped['__TEXT']:
+                          raise ValueError(f'No room for {used:#x} bytes in __NATIVE_TEXT: {self.mapped["__TEXT"]:#x} bytes of whole pages are free')
+          """
+          patched = False
           for path in Path('UniXNU').rglob('fileset_layout.py'):
               text = path.read_text()
               if "roots['__NATIVE_TEXT']" in text:
                   print('already patched', path)
+                  patched = True
                   continue
               if needle not in text:
                   print('needle not found', path)
                   continue
               path.write_text(text.replace(needle, replacement, 1))
               print('patched', path)
+              patched = True
+          if not patched:
+              raise SystemExit('prelink fallback needle not found')
           PYTHON
       - name: Build images
         id: build-images

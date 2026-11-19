@@ -30,12 +30,13 @@ Traceback (most recent call last):
   File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_segmented.py", line 35, in place_kernel
     self.layout = Layout(self.cache, self.native, self.closure)
                   ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 159, in __init__
-    self.validate()
-    ~~~~~~~~~~~~~^^
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 250, in validate
-    raise ValueError('Root mappings overlap: ' + repr([(s['name'], hex(s['va']), hex(s['size'])) for s in sorted((s for s in self.roots.values() if s['size']), key=lambda s: s['va'])]))
-ValueError: Root mappings overlap: [('__TEXT', '0xfffffff007004000', '0x8000'), ('__PRELINK_TEXT', '0xfffffff00700c000', '0xdb8000'), ('__DATA_CONST', '0xfffffff007dc4000', '0xd08000'), ('__DATA_SPTM', '0xfffffff008acc000', '0x74000'), ('__TEXT_EXEC', '0xfffffff008b40000', '0x3a18000'), ('__NATIVE_TEXT', '0xfffffff00c4bc000', '0x3c8000'), ('__DATA', '0xfffffff00c884000', '0x4bc000'), ('__LINKEDIT', '0xfffffff00cd40000', '0x2750000'), ('__PRELINK_INFO', '0xfffffff00f490000', '0x3c8000'), ('__KLDDATA', '0xfffffff00f858000', '0x8000'), ('__BOOTDATA', '0xfffffff00f860000', '0xd8000')]
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 101, in __init__
+    self.cursor = align(max(self.cursor, self.end('__TEXT_EXEC') - self.cache.base))
+                                         ~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/kits/XnuPrelink/fileset_layout.py", line 191, in end
+    return self.placements[name] + self.span(name)
+           ~~~~~~~~~~~~~~~^^^^^^
+KeyError: '__TEXT_EXEC'
 === logs/macos-27.3-26C5035r/sheng_macos/logs/component-VirtioMmioBlock.log
 VirtioMmioBlock: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/logs/archive-08-build-sheng-source-storage.log
@@ -45,8 +46,48 @@ ranlib: warning: static library will have mixture of arm64e ABIs
 ranlib: warning: static library will have mixture of arm64e ABIs
 PASS: staged AGXAccelerator builds against the audited original IOAcceleratorES imports
 === logs/macos-27.3-26C5035r/sheng_macos/logs/kernel-bootstrap.log
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+2 warnings generated.
+             CC fasttrap_isa.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC disassembler.o
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/dev/arm64/fbt_arm.c:284:31: warning: variable 'savedRegs' set but not used [-Wunused-but-set-variable]
+  284 |         int             foundPushLR, savedRegs;
+      |                                      ^
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC sdt_arm.o
+             CC bsd_stubs.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC nfs_syscalls.o
+             CC netboot.o
+clang: clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC dtrace.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC lockprof.o
+             CC lockstat.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/dev/dtrace/dtrace.c:2167:10: warning: variable 'rval' set but not used [-Wunused-but-set-variable]
+ 2167 |                         void *rval;
+      |                               ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/dev/dtrace/dtrace.c:3113:11: warning: variable 'rv' set but not used [-Wunused-but-set-variable]
  3113 |         uint32_t rv;
       |                  ^
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/dev/dtrace/dtrace.c:5277:9: warning: variable 'base' set but not used [-Wunused-but-set-variable]
  5277 |                 char *base, *end;
       |                       ^
@@ -102,25 +143,25 @@ clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Content
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/dev/dtrace/systrace.c:1010:12: warning: variable 'uargs' set but not used [-Wunused-but-set-variable]
  1010 |         uint64_t *uargs = NULL;
       |                   ^
-2 warnings generated.
              CC fasttrap.o
+2 warnings generated.
        GENERATE systrace_args.c from bsd.syscalls.master
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
             C++ vfs_exclave_fs_helper.cpo
 clang++: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang++: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
-5 warnings generated.
              CC audit_kevents.o
+5 warnings generated.
              CC init_sysent.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC syscalls.o
-             AS cpu_in_cksum.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             AS cpu_in_cksum.o
              AS cpu_copy_in_cksum.o
              AS cpu_memcmp_mask.o
              CC systrace_args.o
@@ -246,8 +287,51 @@ make[1]: *** [build_all_bootstrap_DEVELOPMENT^ARM64^BCM2837] Error 2
 make: *** [build] Error 2
 build-xnu-4k-baseline.sh: line 844: make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 MACHINE_CONFIGS=BCM2837 KERNEL_CONFIGS=DEVELOPMENT ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG="$XNU_ARCH_STRING" LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY ARM64_LINK_ADDR=0xfffffff007004000 ARM64_PLKSEG_ADDR=0xfffffff004004000 DEPLOYMENT_TARGET_FLAGS="-miphoneos-version-min=$IOS_VERSION $XNU_TARGET_DEFINE" DEPLOYMENT_LINKER_FLAGS="-Wl,-ios_version_min,$IOS_VERSION" RC_DARWIN_KERNEL_VERSION="$XNU_DARWIN" RC_ProjectSourceVersion="$XNU_VERSION" BUILD_LTO=0 BOUND_CHECKS=0 BUILD_WERROR="${XNU_BUILD_WERROR:-0}" MAKEJOBS=-j"${JOBS:-4}" CFLAGS_EXTRA="$EXTRA_CFLAGS" "${EXTRA_MAKE_ARGS[@]}" ${XNU_HOST_MAKE_ARGS[@]+"${XNU_HOST_MAKE_ARGS[@]}"} OBJROOT="$ROOT/build/xnu/ios-obj" SYMROOT="$ROOT/build/xnu/ios-sym" DSTROOT="$ROOT/build/xnu/ios-dst" failed
 === logs/macos-27.3-26C5035r/sheng_macos/logs/kernel.log
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/kern_memorystatus.c:7177:8: warning: variable 'aPid' set but not used [-Wunused-but-set-variable]
+ 7177 |         pid_t aPid = 0;
+      |               ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/kern_memorystatus.c:7181:11: warning: variable 'aPid_ep' set but not used [-Wunused-but-set-variable]
+ 7181 |         uint32_t aPid_ep;
+      |                  ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/kern_memorystatus.c:7966:12: warning: variable 'is_at_boot_snapshot' set but not used [-Wunused-but-set-variable]
+ 7966 |         boolean_t is_at_boot_snapshot = FALSE;
+      |                   ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/kern_memorystatus_freeze.c:860:27: warning: variable 'bucket' set but not used [-Wunused-but-set-variable]
+  860 |         memstat_bucket_t        *bucket;
+      |                                  ^
+             CC kern_sfi.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+1 warning generated.
+             CC kern_time.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC kern_xxx.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC mach_process.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC stackshot.o
+6 warnings generated.
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC subr_xxx.o
+             CC sys_eventlink.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC sys_generic.o
+             CC sys_pipe.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC sys_record_event.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC sys_coalition.o
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/sys_generic.c:1585:6: warning: variable 'nc' set but not used [-Wunused-but-set-variable]
  1585 |         int nc = 0;             /* bit vector offset (nc'th bit) */
       |             ^
@@ -256,32 +340,31 @@ clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Content
       |                              ^
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
-             CC sys_coalition.o
              CC sys_persona.o
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 2 warnings generated.
              CC sys_ulock.o
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC sys_work_interval.o
-             CC ubc_subr.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+             CC ubc_subr.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC uipc_syscalls.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
-             CC sysv_shm.o
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/ubc_subr.c:2134:19: warning: variable 'uip' set but not used [-Wunused-but-set-variable]
  2134 |         struct ubc_info *uip;
       |                          ^
+             CC sysv_shm.o
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/ubc_subr.c:5262:33: warning: variable 'orig_uip' set but not used [-Wunused-but-set-variable]
  5262 |         struct ubc_info         *uip, *orig_uip;
       |                                        ^
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/ubc_subr.c:7224:1: warning: no previous prototype for function 'cs_text_fixup_signed_copy' [-Wmissing-prototypes]
  7224 | cs_text_fixup_signed_copy(struct vnode *vp, off_t offset, const void *data, size_t length)
       | ^
@@ -289,8 +372,6 @@ clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Content
  7223 | void *
       | ^
       | static 
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC sysv_sem.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
@@ -300,9 +381,9 @@ clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Content
              CC sysv_msg.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
-1 warning generated.
-             CC posix_sem.o
 3 warnings generated.
+             CC posix_sem.o
+1 warning generated.
              CC posix_shm.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
@@ -318,15 +399,15 @@ clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Content
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC sys_recount.o
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC tracker.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC socket_flows.o
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC vm_unix.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/kern/tracker.c:628:2: warning: variable 'dst_domain_buffer_size' set but not used [-Wunused-but-set-variable]
@@ -341,25 +422,25 @@ clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Content
       |            ^
 2 warnings generated.
              CC kern_ntptime.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/xnu-work/bsd/vm/vm_unix.c:2493:34: warning: variable 'file_size' set but not used [-Wunused-but-set-variable]
  2493 |         size_t                          file_size;
       |                                         ^
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC imageboot.o
+             CC proc_uuid_policy.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
-             CC proc_uuid_policy.o
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC profile_runtime.o
 1 warning generated.
              CC channel_syscalls.o
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
-clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC nexus_syscalls.o
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
+clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/usr/local/include/iBoot' [-Wmissing-include-dirs]
 clang: warning: no such include directory: '/Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk//System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/AppleFeatures' [-Wmissing-include-dirs]
              CC stubs.o
@@ -406,6 +487,7 @@ ld: warning: -segment_order of __LINKEDIT is ignored, the segment must be ordere
        DSYMUTIL mach.development.bcm2837.dSYM
           STRIP mach.development.bcm2837
         LIBTOOL mach.development.bcm2837.a
+built kernel at /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837//mach.development.bcm2837
 libtool: warning: 'exclaves_aoe.o' has no symbols
 libtool: warning: 'exclaves_conclave.o' has no symbols
 libtool: warning: 'exclaves_driverkit.o' has no symbols
@@ -444,7 +526,6 @@ libtool: warning: 'cpu_copy_in_cksum_gen.o' has no symbols
 libtool: warning: 'ctrr_test_sysctl.o' has no symbols
 libtool: warning: 'IOCommandQueue.cpo' has no symbols
 libtool: warning: 'AppleARMSMP.cpo' has no symbols
-built kernel at /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837//mach.development.bcm2837
 Source kernel POST integrity field populated; runtime selftests are still required
 === logs/macos-27.3-26C5035r/sheng_macos/logs/storage-headers.log
 PASS: 19 public IOStorageFamily headers prepared at 7edb88fbae296fb7c8ce2f64e115e116e566d51c
@@ -452,6 +533,27 @@ PASS: 19 public IOStorageFamily headers prepared at 7edb88fbae296fb7c8ce2f64e115
 PASS: pinned enabled A740 identity, GPU/GMU/SMMU resources, exact stream bindings and ZAP reservation; source evidence only
 PASS: pinned GPU/GMU bank policy and exact SMMU/stream DT binding (source only)
 === logs/macos-27.3-26C5035r/sheng_macos/logs/archive-20-build-gop-legacy-display-27.log
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/LegacyDisplayProbe.cpp:223:13: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+  223 |         at+=snprintf(out+at,cap-at,"W%u t=%llu.%03llus +%llums offer=%lldms done=%lldms\n",e.number,(unsigned long long)(e.submitted/1000000),
+      |           ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  224 |             (unsigned long long)((e.submitted/1000)%1000),(unsigned long long)((e.submitted-previous)/1000),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  225 |             e.offered?(long long)((e.offered-e.submitted)/1000):-1LL,e.done?(long long)((e.done-e.submitted)/1000):-1LL);
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/LegacyDisplayProbe.cpp:404:17: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+  404 |     unsigned at=snprintf(out,cap,"d+5808:");
+      |              ~~ ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/LegacyDisplayProbe.cpp:405:88: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+  405 |     for(unsigned o=5808;o<5872 && at+16<cap;o+=4){uint32_t v;memcpy(&v,object+o,4);at+=snprintf(out+at,cap-at," %x",v);}
+      |                                                                                      ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/LegacyDisplayProbe.cpp:412:13: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+  412 |         at+=snprintf(out+at,cap-at,"C%u pid=%d calls=%u fails=%u regs=%u",c,s.pid,s.calls,s.fails,s.regs);
+      |           ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/LegacyDisplayProbe.cpp:414:17: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+  414 |             at+=snprintf(out+at,cap-at," reg(t%u,p%llx,r%x)=%x",s.reg[r].type,(unsigned long long)s.reg[r].port,s.reg[r].ref,s.reg[r].status);
+      |               ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/LegacyDisplayProbe.cpp:415:13: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+  415 |         at+=snprintf(out+at,cap-at,"\n");
       |           ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/LegacyDisplayProbe.cpp:417:17: warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
   417 |             at+=snprintf(out+at,cap-at,"  sel6 args %llx %llx %llx: %u calls %u fails last %x\n",(unsigned long long)s.sel6_seen[k][0],(unsigned long long)s.sel6_seen[k][1],(unsigned long long)s.sel6_seen[k][2],s.sel6_calls[k],s.sel6_fails[k],s.sel6_status[k]);
@@ -684,7 +786,7 @@ Collecting PyYAML==6.0.3 (from -r /Users/runner/work/sheng-ipados-build/sheng-ip
 Collecting ply==3.11 (from -r /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/scripts/requirements-adreno-compiler.txt (line 6))
   Downloading ply-3.11-py2.py3-none-any.whl.metadata (844 bytes)
 Downloading meson-1.9.1-py3-none-any.whl (1.0 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 21.2 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 13.5 MB/s  0:00:00
 Downloading mako-1.3.10-py3-none-any.whl (78 kB)
 Downloading markupsafe-3.0.4-cp314-cp314-macosx_11_0_arm64.whl (12 kB)
 Downloading packaging-25.0-py3-none-any.whl (66 kB)
@@ -710,7 +812,7 @@ PASS: Rust indirect branches routed through the PAC trampolines: 15337 blr, 2364
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/adreno-metal-plugin-macos27/Shader Cache.app/Contents/MacOS/ShaderCacheRegister: replacing existing signature
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/adreno-metal-plugin-macos27/Shader Cache.app: replacing existing signature
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/adreno-metal-plugin-macos27/Shader Cache.app
-PASS: Adreno plugin bundle and probe daemon built and 4K-signed, CDHashes a4831839af7031d2e01e79ab55da7e00412e2e71 7a5b5a444a6151c8a8831de3e99f7bdb4041263e cff5b98ca1ea22910b5728d7bd385f5d599fab3c
+PASS: Adreno plugin bundle and probe daemon built and 4K-signed, CDHashes 2d06eadcd8f6648017b8b0a6354d8a02cdaea1cf 78a877dfc25e64cee4ddbba539fee850805098c7 f05f473b8395742fdbc9e0b58c228076ae13a2b9
 644        628 GPUBundles/NativeAdrenoMetal.bundle/Contents/Info.plist
 755   25113392 GPUBundles/NativeAdrenoMetal.bundle/Contents/MacOS/NativeAdrenoMetal
 755   17660128 GPUBundles/NativeAdrenoMetal.bundle/Contents/MacOS/libvulkan_freedreno.dylib
@@ -724,38 +826,38 @@ PASS: Adreno plugin bundle and probe daemon built and 4K-signed, CDHashes a48318
 755     123600 Applications/Shader Cache.app/Contents/MacOS/ShaderCacheWorker
 644       2664 Applications/Shader Cache.app/Contents/_CodeSignature/CodeResources
 644        531 Library/LaunchAgents/org.unixnu.ShaderCache.register.plist
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/gpuaddon.bin: 13 files, 15495784 bytes
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/boot-shims/bootshim/apfs_boot_util: replacing existing signature
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/boot-shims.bin: 14 files
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/audio/ShengAudio.driver: replacing existing signature
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/audio/ShengAudio.driver CDHash c13c4473f39726da496680403e888cc389cd4c21
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/combined.bin: 17 files
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/gpuaddon.bin: 13 files, 15495768 bytes
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/boot-shims/bootshim/apfs_boot_util: replacing existing signature
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/boot-shims.bin: 14 files
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/audio/ShengAudio.driver: replacing existing signature
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/audio/ShengAudio.driver CDHash c13c4473f39726da496680403e888cc389cd4c21
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/combined.bin: 17 files
 "disk7" ejected.
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth/userland/build/BlueTool: replacing existing signature
-Built signed arm64e BlueTool: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth/userland/build/BlueTool; CDHash 96c854da201a57006dff1d73919bdca935947146
-ld: warning: static initializer 'ltmp6' found in '/private/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T/Type0-68df43.o'. Use -no_inits to make this an error.  Use -no_warn_inits to suppress warning
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth/userland/build/QcaBTType0.dylib: replacing existing signature
-Built signed arm64e native capability adapter: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth/userland/build/QcaBTType0.dylib; CDHash 67c03a58c7f9884be9d700eaf10e50ad3f479add
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth/userland/bin/bluetoothd: replacing existing signature
-Built signed native Bluetooth userland: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth/userland
-Staged Bluetooth firmware: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth/firmware/qca
-Staged Bluetooth runtime: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth/userland/build/BlueTool: replacing existing signature
+Built signed arm64e BlueTool: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth/userland/build/BlueTool; CDHash 96c854da201a57006dff1d73919bdca935947146
+ld: warning: static initializer 'ltmp6' found in '/private/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T/Type0-364ad0.o'. Use -no_inits to make this an error.  Use -no_warn_inits to suppress warning
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth/userland/build/QcaBTType0.dylib: replacing existing signature
+Built signed arm64e native capability adapter: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth/userland/build/QcaBTType0.dylib; CDHash 67c03a58c7f9884be9d700eaf10e50ad3f479add
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth/userland/bin/bluetoothd: replacing existing signature
+Built signed native Bluetooth userland: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth/userland
+Staged Bluetooth firmware: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth/firmware/qca
+Staged Bluetooth runtime: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth
 "disk7" ejected.
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/bluetooth-addon.bin: 23 files
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/bluetooth-addon.bin: 23 files
 verified locked Linux/mac80211/cfg80211, FreeBSD and supplicant sources: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/drivers/Ath12kWifi/out/source-identity.json
 staged original wpa_supplicant with native backend: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/drivers/Ath12kWifi/out/wpa-src
 built macos native supplicant: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/drivers/Ath12kWifi/out/wpa-macos/bin/wpa_supplicant
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/wifi/bin/unixnu-wpa_supplicant: replacing existing signature
-staged signed native Wi-Fi service: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/wifi; CDHash 30c448d66144af098cc82a03a16e707d161ca4fc
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/wifi-addon.bin: 29 files
-Staged VPU firmware: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/firmware-stage-video-firmware/firmware/qcom/sm8550/sheng/vpu30_4v.mbn
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/firmware-stage-video-firmware-addon.bin: 30 files
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/absent/bin/unixnu-absentd: replacing existing signature
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/absent-addon.bin: 31 files
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/template-addon.bin: 32 files
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/desktop-addon.bin: 35 files
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/apple-trust.bundle 451264 bytes [18568, 144, 87]
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-0etexbgd/owner-trust.bundle: 3 -> 4 modules, last has 12 hashes
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/wifi/bin/unixnu-wpa_supplicant: replacing existing signature
+staged signed native Wi-Fi service: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/wifi; CDHash 4cd50a6d8a57f233ba8f7c27bc805664e6b7bad6
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/wifi-addon.bin: 29 files
+Staged VPU firmware: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/firmware-stage-video-firmware/firmware/qcom/sm8550/sheng/vpu30_4v.mbn
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/firmware-stage-video-firmware-addon.bin: 30 files
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/absent/bin/unixnu-absentd: replacing existing signature
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/absent-addon.bin: 31 files
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/template-addon.bin: 32 files
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/desktop-addon.bin: 35 files
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/apple-trust.bundle 451264 bytes [18568, 144, 87]
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/runtime/prepare-ma5qucyf/owner-trust.bundle: 3 -> 4 modules, last has 12 hashes
 === logs/macos-27.3-26C5035r/sheng_macos/logs/component-Adreno740.log
 Adreno740: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/logs/archive-01-build-corecrypto-14.log
@@ -778,52 +880,52 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
       Adding generic-array v0.14.7 (available: v0.14.9)
       Adding sha2 v0.10.9 (available: v0.11.1)
  Downloading crates ...
-  Downloaded itoa v1.0.19
   Downloaded cpufeatures v0.2.17
-  Downloaded serde_derive v1.0.229
-  Downloaded block-buffer v0.12.1
   Downloaded crypto-common v0.1.7
-  Downloaded sha2-asm v0.6.4
+  Downloaded block-buffer v0.12.1
+  Downloaded sha2 v0.11.1
+  Downloaded block-buffer v0.10.4
+  Downloaded generic-array v0.14.7
+  Downloaded cpufeatures v0.3.1
   Downloaded version_check v0.9.5
+  Downloaded digest v0.11.3
+  Downloaded sha2-asm v0.6.4
+  Downloaded zmij v1.0.23
   Downloaded cfg-if v1.0.5
   Downloaded crypto-common v0.2.2
-  Downloaded block-buffer v0.10.4
-  Downloaded cpufeatures v0.3.1
-  Downloaded generic-array v0.14.7
-  Downloaded sha2 v0.10.9
-  Downloaded sha2 v0.11.1
-  Downloaded quote v1.0.47
-  Downloaded shlex v2.0.1
-  Downloaded zmij v1.0.23
   Downloaded digest v0.10.7
-  Downloaded hybrid-array v0.4.15
-  Downloaded digest v0.11.3
-  Downloaded proc-macro2 v1.0.107
-  Downloaded serde_core v1.0.229
-  Downloaded unicode-ident v1.0.27
-  Downloaded find-msvc-tools v0.1.15
+  Downloaded itoa v1.0.19
   Downloaded libloading v0.8.9
-  Downloaded memchr v2.8.3
   Downloaded serde v1.0.229
-  Downloaded typenum v1.20.1
+  Downloaded quote v1.0.47
+  Downloaded sha2 v0.10.9
+  Downloaded find-msvc-tools v0.1.15
   Downloaded serde_json v1.0.154
+  Downloaded shlex v2.0.1
+  Downloaded unicode-ident v1.0.27
+  Downloaded hybrid-array v0.4.15
+  Downloaded serde_core v1.0.229
+  Downloaded serde_derive v1.0.229
+  Downloaded memchr v2.8.3
+  Downloaded proc-macro2 v1.0.107
   Downloaded cc v1.11.2
+  Downloaded typenum v1.20.1
   Downloaded syn v3.0.10
   Downloaded ash v0.38.0+1.3.281
   Downloaded libc v0.2.191
     Updating crates.io index
  Downloading crates ...
-  Downloaded addr2line v0.25.1
   Downloaded adler2 v2.0.1
-  Downloaded foldhash v0.2.0
+  Downloaded addr2line v0.25.1
   Downloaded rustc-literal-escaper v0.0.8
-  Downloaded gimli v0.32.3
-  Downloaded miniz_oxide v0.8.9
-  Downloaded getopts v0.2.24
   Downloaded cfg-if v1.0.4
+  Downloaded foldhash v0.2.0
+  Downloaded getopts v0.2.24
   Downloaded hashbrown v0.17.1
   Downloaded rustc-demangle v0.1.27
+  Downloaded miniz_oxide v0.8.9
   Downloaded memchr v2.7.6
+  Downloaded gimli v0.32.3
   Downloaded object v0.37.3
   Downloaded libc v0.2.185
    Compiling compiler_builtins v0.1.160 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/compiler-builtins/compiler-builtins)
@@ -831,61 +933,61 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
    Compiling libc v0.2.185
    Compiling object v0.37.3
    Compiling std v0.0.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/std)
-   Compiling proc-macro2 v1.0.107
    Compiling libc v0.2.191
    Compiling typenum v1.20.1
+   Compiling proc-macro2 v1.0.107
    Compiling hybrid-array v0.4.15
    Compiling quote v1.0.47
    Compiling unicode-ident v1.0.27
-   Compiling serde_core v1.0.229
    Compiling version_check v0.9.5
+   Compiling serde_core v1.0.229
    Compiling generic-array v0.14.7
    Compiling block-buffer v0.12.1
    Compiling crypto-common v0.2.2
    Compiling cpufeatures v0.3.1
    Compiling syn v3.0.10
    Compiling digest v0.11.3
-   Compiling serde v1.0.229
-   Compiling shlex v2.0.1
-   Compiling find-msvc-tools v0.1.15
-   Compiling zmij v1.0.23
    Compiling cfg-if v1.0.5
-   Compiling sha2 v0.11.1
-   Compiling serde_derive v1.0.229
+   Compiling find-msvc-tools v0.1.15
+   Compiling serde v1.0.229
+   Compiling zmij v1.0.23
+   Compiling shlex v2.0.1
    Compiling cc v1.11.2
-   Compiling ash v0.38.0+1.3.281
+   Compiling serde_derive v1.0.229
+   Compiling sha2 v0.11.1
    Compiling serde_json v1.0.154
-   Compiling sha2-asm v0.6.4
+   Compiling ash v0.38.0+1.3.281
    Compiling metal2vulkan v0.2.0 (/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/gpu-reference/metal2vulkan/crates/metal2vulkan)
+   Compiling sha2-asm v0.6.4
    Compiling rustc-std-workspace-core v1.99.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/rustc-std-workspace-core)
    Compiling alloc v0.0.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc)
-   Compiling adler2 v2.0.1
    Compiling unwind v0.0.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/unwind)
+   Compiling adler2 v2.0.1
    Compiling memchr v2.7.6
+   Compiling rustc-demangle v0.1.27
    Compiling panic_abort v0.0.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/panic_abort)
    Compiling cfg-if v1.0.4
-   Compiling rustc-demangle v0.1.27
    Compiling rustc-literal-escaper v0.0.8
    Compiling rustc-std-workspace-alloc v1.99.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/rustc-std-workspace-alloc)
    Compiling panic_unwind v0.0.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/panic_unwind)
    Compiling gimli v0.32.3
    Compiling miniz_oxide v0.8.9
-   Compiling hashbrown v0.17.1
    Compiling std_detect v0.1.5 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/std_detect)
+   Compiling hashbrown v0.17.1
    Compiling addr2line v0.25.1
    Compiling proc_macro v0.0.0 (/Users/runner/.rustup/toolchains/1.98.0-aarch64-apple-darwin/lib/rustlib/src/rust/library/proc_macro)
    Compiling libloading v0.8.9
    Compiling memchr v2.8.3
    Compiling itoa v1.0.19
    Compiling metal2vulkan-air v0.2.0 (/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/gpu-reference/metal2vulkan/crates/metal2vulkan-air)
-   Compiling block-buffer v0.10.4
    Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
    Compiling digest v0.10.7
    Compiling cpufeatures v0.2.17
    Compiling sha2 v0.10.9
    Compiling metal2vulkan-runtime v0.2.0 (/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/.cache/gpu-reference/metal2vulkan/crates/metal2vulkan-runtime)
    Compiling adreno-metal-bridge v0.1.0 (/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/build/adreno-metal-bridge)
-    Finished `release` profile [optimized + debuginfo] target(s) in 28m 07s
+    Finished `release` profile [optimized + debuginfo] target(s) in 27m 33s
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/NativeUfs.log
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/drivers/ShengUfs/NativeUfs.cpp:249:38: warning: implicit conversion loses integer precision: 'uint32_t' (aka 'unsigned int') to 'uint8_t' (aka 'unsigned char') [-Wimplicit-int-conversion]
   249 |   at[0] = value >> 24; at[1] = value >> 16; at[2] = value >> 8; at[3] = value;
@@ -991,6 +1093,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
       |                         ^
 5 warnings generated.
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BluetoothFirmware.command.json
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
+  "CONFIG_MACF_SOCKET_SUBSET",
+  "-D",
+  "CONFIG_SETUID",
+  "-D",
+  "CONFIG_SECURE_BSD_ROOT",
+  "-D",
+  "CONFIG_KAS_INFO",
+  "-D",
+  "CONFIG_PROC_RESOURCE_LIMITS",
   "-D",
   "CONFIG_ZLEAKS",
   "-D",
@@ -1192,6 +1334,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/IOBlockStorageDevice.command.json
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_INHERITANCE",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_ECC_LOGGING",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
   "CONFIG_MACF",
   "-D",
   "CONFIG_MACF_SOCKET_SUBSET",
@@ -1394,6 +1576,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootDiagExport.command.json
   "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
+  "CONFIG_MACF_SOCKET_SUBSET",
+  "-D",
+  "CONFIG_SETUID",
+  "-D",
+  "CONFIG_SECURE_BSD_ROOT",
+  "-D",
+  "CONFIG_KAS_INFO",
+  "-D",
+  "CONFIG_PROC_RESOURCE_LIMITS",
+  "-D",
   "CONFIG_ZLEAKS",
   "-D",
   "LOCK_STATS",
@@ -1594,6 +1816,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/SourceRootBinding.command.json
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_INHERITANCE",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_ECC_LOGGING",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
   "-D",
   "CONFIG_MACF",
   "-D",
@@ -1798,6 +2060,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootReset.log
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootLog.command.json
   "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
   "CONFIG_SLEEP",
   "-D",
   "CONFIG_MAX_THREADS=500",
@@ -2000,6 +2302,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootProcessWorker.log
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/SourceRootPolicies.command.json
   "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_INHERITANCE",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_ECC_LOGGING",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
   "CONFIG_MACF",
   "-D",
   "CONFIG_MACF_SOCKET_SUBSET",
@@ -2201,6 +2543,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/NativeRamBlock.command.json
   "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_INHERITANCE",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_ECC_LOGGING",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
   "CONFIG_MACF",
   "-D",
   "CONFIG_MACF_SOCKET_SUBSET",
@@ -2401,6 +2783,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootLog.log
+ 1161 |     int n = snprintf(row, sizeof row, "[fence page] pa=%llx dram:", (unsigned long long)native_adreno_fence_phys);
+      |         ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:684:13: note: previous declaration is here
+  684 |   const int n = snprintf(head, sizeof head, "#slot %u t=%us tag=%s", slot, now, boot_log_tag);
+      |             ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1162:181: warning: implicit conversion changes signedness: 'int' to 'unsigned long' [-Wsign-conversion]
+ 1162 |     for (unsigned w = 0; w < 8 && n > 0 && n < 110; ++w) {uint32_t v = 0xdead; native_adreno_dram_read32(native_adreno_fence_phys + 4 * w, &v); n += snprintf(row + n, sizeof row - n, " %x", v);}
+      |                                                                                                                                                                                   ~ ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1165:183: warning: implicit conversion changes signedness: 'int' to 'unsigned long' [-Wsign-conversion]
+ 1165 |     for (unsigned w = 0; w < 8 && n > 0 && n < 110; ++w) {uint32_t v = 0xdead; native_adreno_cached_read32(native_adreno_fence_phys + 4 * w, &v); n += snprintf(row + n, sizeof row - n, " %x", v);}
+      |                                                                                                                                                                                     ~ ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1171:9: warning: declaration shadows a local variable [-Wshadow]
+ 1171 |     int n = snprintf(row, sizeof row, "[gpu methods] n:calls/fail/us");
+      |         ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:684:13: note: previous declaration is here
+  684 |   const int n = snprintf(head, sizeof head, "#slot %u t=%us tag=%s", slot, now, boot_log_tag);
+      |             ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1175:43: warning: implicit conversion changes signedness: 'int' to 'unsigned long' [-Wsign-conversion]
+ 1175 |       n += snprintf(row + n, sizeof row - n, " %u:%u/%u/%u", m, native_adreno_method_stats[m][0], native_adreno_method_stats[m][1], native_adreno_method_stats[m][3]);
+      |                                         ~ ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1198:9: warning: declaration shadows a local variable [-Wshadow]
+ 1198 |     int n = snprintf(row, sizeof row, "[vm kinds]");
+      |         ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:684:13: note: previous declaration is here
+  684 |   const int n = snprintf(head, sizeof head, "#slot %u t=%us tag=%s", slot, now, boot_log_tag);
+      |             ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1217:29: warning: declaration shadows a local variable [-Wshadow]
+ 1217 |       char owners[400]; int n = snprintf(owners, sizeof owners, "[bo owners]");
+      |                             ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:684:13: note: previous declaration is here
+  684 |   const int n = snprintf(head, sizeof head, "#slot %u t=%us tag=%s", slot, now, boot_log_tag);
+      |             ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1233:29: warning: declaration shadows a local variable [-Wshadow]
+ 1233 |       char owners[400]; int n = snprintf(owners, sizeof owners, "[import memory] alive %u KiB %u peak %u made %u |", native_adreno_import_memory[0],
+      |                             ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:684:13: note: previous declaration is here
+  684 |   const int n = snprintf(head, sizeof head, "#slot %u t=%us tag=%s", slot, now, boot_log_tag);
+      |             ^
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:1243:29: warning: declaration shadows a local variable [-Wshadow]
+ 1243 |       char owners[400]; int n = snprintf(owners, sizeof owners, "[bo view owners]");
       |                             ^
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/macos-27.3-26C5035r/sheng_macos/tree/kits/sheng/BootLog.c:684:13: note: previous declaration is here
   684 |   const int n = snprintf(head, sizeof head, "#slot %u t=%us tag=%s", slot, now, boot_log_tag);
@@ -2602,6 +3024,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
       |            ^
 64 warnings generated.
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/xnu_crypto.command.json
+  "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
   "-D",
   "CONFIG_SLEEP",
   "-D",
@@ -2817,6 +3279,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 1 warning generated.
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootProcessWorker.command.json
   "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
   "CONFIG_SLEEP",
   "-D",
   "CONFIG_MAX_THREADS=500",
@@ -3019,6 +3521,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/SourceStorage.log
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/WifiFirmware.command.json
   "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
+  "CONFIG_MACF_SOCKET_SUBSET",
+  "-D",
+  "CONFIG_SETUID",
+  "-D",
+  "CONFIG_SECURE_BSD_ROOT",
+  "-D",
+  "CONFIG_KAS_INFO",
+  "-D",
+  "CONFIG_PROC_RESOURCE_LIMITS",
+  "-D",
   "CONFIG_ZLEAKS",
   "-D",
   "LOCK_STATS",
@@ -3219,6 +3761,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootLatencyTrace.command.json
+  "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
   "-D",
   "CONFIG_SLEEP",
   "-D",
@@ -3421,6 +4003,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootReset.command.json
   "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
   "CONFIG_SLEEP",
   "-D",
   "CONFIG_MAX_THREADS=500",
@@ -3621,6 +4243,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootLogDefaults.command.json
+  "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
   "-D",
   "CONFIG_SLEEP",
   "-D",
@@ -3832,6 +4494,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/SourceRootBinding.log
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/verified_root.command.json
   "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
   "CONFIG_SLEEP",
   "-D",
   "CONFIG_MAX_THREADS=500",
@@ -4032,6 +4734,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/RootAnchor.command.json
+  "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
   "-D",
   "CONFIG_SLEEP",
   "-D",
@@ -4268,6 +5010,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/xnu_crypto.log
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootWatchdogPolicy.command.json
   "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
+  "CONFIG_MACF_SOCKET_SUBSET",
+  "-D",
+  "CONFIG_SETUID",
+  "-D",
+  "CONFIG_SECURE_BSD_ROOT",
+  "-D",
+  "CONFIG_KAS_INFO",
+  "-D",
+  "CONFIG_PROC_RESOURCE_LIMITS",
+  "-D",
   "CONFIG_ZLEAKS",
   "-D",
   "LOCK_STATS",
@@ -4469,6 +5251,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/NativeUfs.command.json
   "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_INHERITANCE",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_ECC_LOGGING",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
+  "-D",
   "CONFIG_MACF",
   "-D",
   "CONFIG_MACF_SOCKET_SUBSET",
@@ -4669,6 +5491,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/SourceStorage.command.json
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_INHERITANCE",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_ECC_LOGGING",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
+  "CONFIG_SLEEP",
+  "-D",
+  "CONFIG_MAX_THREADS=500",
+  "-D",
+  "NO_KERNEL_HID",
+  "-D",
+  "LIBKERNCPP",
+  "-D",
+  "CONFIG_BLOCKS",
+  "-D",
+  "CONFIG_KEC_FIPS",
+  "-D",
+  "CONFIG_PERSONAS",
   "-D",
   "CONFIG_MACF",
   "-D",
@@ -4886,6 +5748,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/WifiFirmware.log
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootProcessProbe.command.json
   "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
   "CONFIG_SLEEP",
   "-D",
   "CONFIG_MAX_THREADS=500",
@@ -5088,6 +5990,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/verified_root.log
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/sheng-source-storage/BootUiTraceProbe.command.json
   "-D",
+  "CONFIG_JETSAM",
+  "-D",
+  "CONFIG_FREEZE",
+  "-D",
+  "CHECK_CS_VALIDATION_BITMAP",
+  "-D",
+  "CONFIG_PHYS_WRITE_ACCT",
+  "-D",
+  "CONFIG_PHANTOM_CACHE",
+  "-D",
+  "VM_PRESSURE_EVENTS",
+  "-D",
+  "CONFIG_SECLUDED_MEMORY",
+  "-D",
+  "CONFIG_MEMORY_MICROSTACKSHOT",
+  "-D",
+  "CONFIG_IOSCHED",
+  "-D",
+  "CONFIG_IO_ACCOUNTING",
+  "-D",
+  "IMPORTANCE_TRACE",
+  "-D",
+  "CONFIG_TELEMETRY",
+  "-D",
+  "CONFIG_PROC_UUID_POLICY",
+  "-D",
+  "CONFIG_COREDUMP",
+  "-D",
+  "CONFIG_UCOREDUMP",
+  "-D",
+  "CONFIG_VNGUARD",
+  "-D",
+  "CONFIG_MAP_RANGES",
+  "-D",
+  "IOKITCPP",
+  "-D",
+  "IOKITSTATS",
+  "-D",
+  "IOTRACKING",
+  "-D",
   "CONFIG_SLEEP",
   "-D",
   "CONFIG_MAX_THREADS=500",
@@ -5288,6 +6230,46 @@ ArmDTPlatform: -Werror build and arm64e-apple-ios27.0 object audit passed
   "-DNATIVE_BOOT_PROCESS_CAPTURE=1"
 ]
 === logs/macos-27.3-26C5035r/sheng_macos/tree/build/prime-list.txt
+/System/Library/Extensions/AppleMetalOpenGLRenderer.bundle/Contents/Resources/PixelConverter.metallib
+/System/Library/Extensions/AppleMetalOpenGLRenderer.bundle/Contents/Resources/default.metallib
+/System/Library/Frameworks/Charts.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/CompositorServices.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/CompositorServices.framework/Versions/A/XPCServices/CompositorServicesPostProcess.xpc/Contents/Resources/default.binary.metallib
+/System/Library/Frameworks/CompositorServices.framework/Versions/A/XPCServices/CompositorServicesPostProcess.xpc/Contents/Resources/default.metallib
+/System/Library/Frameworks/ComputeGraph.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/Contacts.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/CoreDisplay.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/CoreImage.framework/CoreImage.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/CoreImage.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/CIPortraitBlurStitchableV2.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/CIPortraitBlurStitchableV3.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_filters.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_filters_stitchable.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_raw.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_raw_stitchable.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_stdlib.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_stdlib_h.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_stdlib_stitchable.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_stdlib_stitchable_h.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_ubershader.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_uberwrapper.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ci_uberwrapper_bin.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/coreui_archive_bin.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/CoreImage.framework/Versions/A/Resources/ubershader_archive_bin.metallib
+/System/Library/Frameworks/CoreMediaIO.framework/Versions/A/Resources/ACD.plugin/Contents/Resources/default.metallib
+/System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/ImmersiveMediaSupport.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/MLCompute.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/Metal.framework/Versions/A/Resources/MTLBVHBuilder.metallib
+/System/Library/Frameworks/Metal.framework/Versions/A/Resources/MTLECBE.metallib
+/System/Library/Frameworks/Metal.framework/Versions/A/Resources/MTLMeshShaderEmulator.metallib
+/System/Library/Frameworks/Metal.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/MetalFX.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSCore.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSFunctions.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSImage.framework/Versions/A/Resources/default.metallib
+/System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSMatrix.framework/Versions/A/Resources/default.metallib
 /System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSNDArray.framework/Versions/A/Resources/default.metallib
 /System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSNeuralNetwork.framework/Versions/A/Resources/default.metallib
 /System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSRayIntersector.framework/Versions/A/Resources/default.metallib

@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -41,12 +42,21 @@ ROOT_REPLACEMENT = """        ordered = sorted((s['va'], s['va'] + s['size']) fo
             raise ValueError('Root mappings overlap: ' + repr([(s['name'], hex(s['va']), hex(s['size'])) for s in sorted((s for s in self.roots.values() if s['size']), key=lambda s: s['va'])]))
 """
 
-found = False
+source = Path('UniXNU/kits/XnuPrelink/fileset_layout.py')
+if not source.is_file():
+    raise SystemExit(f'source file missing: {source} {list(Path("UniXNU").glob("*"))}')
+paths = [source]
 for path in Path('UniXNU').rglob('fileset_layout.py'):
+    if path not in paths:
+        paths.append(path)
+
+patched_source = False
+for path in paths:
     text = path.read_text()
     if "self.cursor = align(max(self.cursor, self.end('__TEXT_EXEC') - self.cache.base))" in text and '__NATIVE_TEXT' in text:
         print('already new layout', path)
-        found = True
+        if path == source:
+            patched_source = True
         continue
     replaced = False
     for rooms in ROOMS:
@@ -65,9 +75,20 @@ for path in Path('UniXNU').rglob('fileset_layout.py'):
         text = text.replace(ROOT_NEEDLE, ROOT_REPLACEMENT, 1)
     path.write_text(text)
     print('patched new layout', path)
-    found = True
-if not found:
-    raise SystemExit('no fileset_layout.py patched')
+    if path == source:
+        patched_source = True
+if not patched_source:
+    raise SystemExit('used fileset_layout.py was not patched')
+
+source_text = source.read_text()
+for path in Path('UniXNU/out').rglob('fileset_layout.py'):
+    try:
+        path.write_text(source_text)
+        print('synced layout', path)
+    except OSError as error:
+        print('sync failed', path, error)
+for cache in list(Path('UniXNU/kits/XnuPrelink').rglob('__pycache__')) + list(Path('UniXNU/out').rglob('__pycache__')):
+    shutil.rmtree(cache, ignore_errors=True)
 
 CLI_NEEDLE = "    modules = prepare(ctx, steps + (['kernel'] if 'prelink' in steps else []))\n"
 CLI_HOOK = CLI_NEEDLE + """    patch = os.environ.get('UNIXNU_PRELINK_PATCH')

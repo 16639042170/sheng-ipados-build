@@ -9,10 +9,10 @@ name: package-sleep-27
 # proprietary-files.txt's mirror. Two boot-log diagnostic patches no longer apply to this
 # kernel and are dropped from the series; the sleep patch stays. Geni SPI is a submodule of the
 # kernel, so the package tree (a git archive) has no drivers/QcomGeniSpi: its headers are copied
-# next to TouchProbe and the build scripts are pointed at the workspace submodule. Probe
-# constants that this build variant leaves unused are marked unused so -Werror keeps its teeth
-# for real errors. package.sh is teed into build-logs so a silent death still leaves its last
-# lines and a df snapshot.
+# next to TouchProbe and every build-script reference is rewritten to the workspace submodule.
+# Probe constants that this build variant leaves unused are marked unused so -Werror keeps its
+# teeth for real errors. package.sh is teed into build-logs so a silent death still leaves its
+# last lines and a df snapshot.
 on:
   push:
     paths:
@@ -175,31 +175,30 @@ jobs:
           script.write_text(text)
           print('patched build-adreno-metal-bridge.py:', 'copied_text' in text)
           PY
-      - name: point the driver build at the real Geni SPI sources
+      - name: point every build script at the real Geni SPI sources
         run: |
           python3 - <<'PY'
-          import pathlib
-          scripts = pathlib.Path('UniXNU/scripts')
+          import pathlib, re, sys
           header = ("import os\n"
                      "from pathlib import Path as _GeniPath\n"
                      "QCOM_GENI_SPI = _GeniPath(os.environ['GITHUB_WORKSPACE']) / 'UniXNU/drivers/QcomGeniSpi'\n")
           touched = []
-          for script in sorted(scripts.glob('build-*.py')):
+          for script in sorted(pathlib.Path('UniXNU/scripts').glob('build-*.py')):
               text = script.read_text()
               if 'drivers/QcomGeniSpi' not in text:
                   continue
-              body = (text.replace("ROOT / 'drivers/QcomGeniSpi'", 'QCOM_GENI_SPI')
-                          .replace("ROOT/'drivers/QcomGeniSpi/GeniSpi.c'", "QCOM_GENI_SPI/'GeniSpi.c'")
-                          .replace("ROOT/'drivers/QcomGeniSpi/GeniSpi.h'", "QCOM_GENI_SPI/'GeniSpi.h'"))
-              if body == text:
-                  continue
+              body = re.sub(r"ROOT\s*/\s*'drivers/QcomGeniSpi/([^']+)'", r"QCOM_GENI_SPI / '\1'", text)
+              body = re.sub(r"ROOT\s*/\s*'drivers/QcomGeniSpi'", 'QCOM_GENI_SPI', body)
+              if 'drivers/QcomGeniSpi' in body:
+                  print('left over in', script.name, file=sys.stderr)
+                  sys.exit(1)
               lines = body.splitlines(True)
               start = 1 if lines and lines[0].startswith('#!') else 0
               lines.insert(start, header)
               script.write_text(''.join(lines))
               touched.append(script.name)
           if not touched:
-              raise SystemExit('no build script referenced drivers/QcomGeniSpi')
+              sys.exit('no build script referenced drivers/QcomGeniSpi')
           print('patched:', ', '.join(touched))
           PY
           cp UniXNU/drivers/QcomGeniSpi/*.h device/package/

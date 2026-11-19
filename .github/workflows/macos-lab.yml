@@ -300,6 +300,7 @@ jobs:
                   info['va'] = self.allocate(info['size'])
           """
           info_replacement = """        info = self.info if hasattr(self, 'info') else self.roots['__PRELINK_INFO']
+                  self.cursor = align(max(self.cursor, max(root['va'] + root['size'] - self.cache.base for root in self.roots.values() if root['size'])))
                   info['va'] = self.allocate(info['size'])
                   self.roots['__PRELINK_INFO'] = info
           """

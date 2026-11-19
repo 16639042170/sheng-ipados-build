@@ -287,6 +287,7 @@ jobs:
           """
           replacement = """        if used > self.mapped['__TEXT']:
                       size = self.segment('__TEXT')['size']
+                      self.cursor = align(max(self.cursor, max(s['va'] + s['size'] - self.cache.base for s in self.roots.values())))
                       address = self.allocate(size)
                       self.roots['__NATIVE_TEXT'] = dict(name='__NATIVE_TEXT', va=address, size=size,
                                                          fileoff=address - self.cache.base, filesize=size)

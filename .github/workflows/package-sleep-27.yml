@@ -4,7 +4,8 @@ name: package-sleep-27
 # pin (ArmCpu sleep #299 + AdrenoMetal sleep) and --kernel-arg platform-sleep=1. Upstream pins
 # the R2507 translator whose copied.rs defines read_pages only for linux/macos, so the iOS
 # target fails to compile; one step widens that cfg to ios. The Ath12kWifi submodule keeps its
-# supplicant sources out of the checkout; one step fetches them before packaging.
+# supplicant sources out of the checkout and its FreeBSD lock has drifted from releng/15.1;
+# one step clones and checks out the locked commits before packaging.
 on:
   push:
     paths:
@@ -128,7 +129,24 @@ jobs:
           PY
       - name: Ath12kWifi supplicant sources
         working-directory: device/drivers/Ath12kWifi
-        run: python3 tools/fetch-sources.py
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          lock = json.load(open('tools/source-lock.json'))
+          for name in ('linux', 'freebsd'):
+              source, directory = lock[name], 'deps/' + name
+              if not os.path.isdir(directory):
+                  subprocess.run(['git', 'clone', '--depth', '1', '--branch', source['ref'], '--filter=blob:none',
+                                  '--sparse', source['url'], directory], check=True)
+              head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
+              print(name, 'cloned HEAD', head, 'locked', source['commit'])
+              if head != source['commit']:
+                  subprocess.run(['git', '-C', directory, 'fetch', '--depth', '1', 'origin', source['commit']], check=True)
+                  subprocess.run(['git', '-C', directory, 'checkout', '--detach', 'FETCH_HEAD'], check=True)
+                  head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
+                  print(name, 'pinned HEAD', head)
+          PY
+          python3 tools/fetch-sources.py
       - name: let the Metal bridge read its own pages on iOS
         run: |
           python3 - <<'PY'

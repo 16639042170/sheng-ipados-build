@@ -1,3 +1,4 @@
+import os
 import re
 from pathlib import Path
 
@@ -61,3 +62,33 @@ for path in Path('UniXNU').rglob('fileset_layout.py'):
     found = True
 if not found:
     raise SystemExit('no fileset_layout.py patched')
+
+CLI_NEEDLE = "    modules = prepare(ctx, steps + (['kernel'] if 'prelink' in steps else []))\n"
+CLI_HOOK = CLI_NEEDLE + """    patch = os.environ.get('UNIXNU_PRELINK_PATCH')
+    if patch:
+        subprocess.run([sys.executable, patch], cwd=os.environ.get('GITHUB_WORKSPACE', os.getcwd()), check=True)
+"""
+cli_patched = False
+for path in Path('UniXNU').rglob('scripts/unixnu/cli.py'):
+    text = path.read_text()
+    if 'UNIXNU_PRELINK_PATCH' in text:
+        print('cli hook already present', path)
+        cli_patched = True
+        continue
+    if 'import subprocess' not in text:
+        text = text.replace('import json\n', 'import json\nimport os\nimport subprocess\n', 1)
+    if CLI_NEEDLE not in text:
+        print('cli prepare line not found', path)
+        continue
+    text = text.replace(CLI_NEEDLE, CLI_HOOK, 1)
+    path.write_text(text)
+    print('cli hook added', path)
+    cli_patched = True
+if not cli_patched:
+    raise SystemExit('no cli.py hook added')
+
+environment = os.environ.get('GITHUB_ENV')
+if environment:
+    with open(environment, 'a', encoding='utf-8') as output:
+        output.write('UNIXNU_PRELINK_PATCH=' + os.path.join(os.environ.get('GITHUB_WORKSPACE', os.getcwd()), '.github/ci/patch-prelink.py') + '\n')
+    print('exported UNIXNU_PRELINK_PATCH')

@@ -1,6 +1,8 @@
 name: package-sleep-27
 
-# OK.
+# scripts/package.sh of the pinned device checkout on a macOS runner. Same shape as the device
+# repository's own package.yml, with the UniXNU/uefi-sheng pins advanced to 2026-11-18 and
+# --kernel-arg platform-sleep=1 added so the kernel arm actually enters sleep.
 on:
   push:
     paths:
@@ -88,7 +90,7 @@ jobs:
           python3 - <<'PY'
           import hashlib, os
           with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-              out.write('key=data-seed-v1-' + hashlib.sha256(os.environ['SEED'].encode()).hexdigest()[:16] + '\n')
+              out.write('key=data-seed-v1-' + hashlib.sha256(os.environ['SEED'].encode()).hexdigest()[:16] + '-27\n')
           PY
       - uses: actions/cache/restore@v4
         id: data-cache
@@ -96,14 +98,15 @@ jobs:
           path: |
             UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr
             UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/inputs.json
-          key: ${{ steps.seed-key.outputs.key }}-27
+          key: ${{ steps.seed-key.outputs.key }}
       - name: prepare preserved Data seed
         env:
           INIT_DATA: ${{ inputs.init_data }}
         run: |
           python3 - <<'PY'
           import hashlib, json, os, pathlib, urllib.request
-          inputs = json.loads(pathlib.Path(os.environ['GITHUB_EVENT_PATH']).read_text()).get('inputs') or {}
+          raw = json.loads(pathlib.Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          inputs = raw.get('inputs') or {}
           path = pathlib.Path('UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr')
           url, digest = inputs.get('data_seed_url', ''), inputs.get('data_seed_sha256', '').lower()
           if url:
@@ -118,35 +121,9 @@ jobs:
                   raise SystemExit('Saved seed differs; preserve and inspect it instead of replacing this installation')
               path.parent.mkdir(parents=True, exist_ok=True)
               path.write_bytes(data)
-          if not path.is_file() and os.environ['INIT_DATA'] != 'true':
+          if not path.is_file() and os.environ.get('INIT_DATA', 'false') != 'true':
               raise SystemExit('No saved seed. Supply the ORIGINAL seed for an existing installation, or select init_data for a FIRST installation')
           PY
-      - name: Ath12kWifi sources
-        working-directory: device/drivers/Ath12kWifi
-        run: |
-          python3 - <<'PY'
-          import json, subprocess
-          lock = json.load(open('tools/source-lock.json'))
-          for name in ('linux', 'freebsd'):
-              source, directory = lock[name], 'deps/' + name
-              subprocess.run(['git', 'clone', '--depth', '1', '--branch', source['ref'], '--filter=blob:none',
-                              '--sparse', source['url'], directory], check=True)
-              subprocess.run(['git', '-C', directory, 'sparse-checkout', 'set', '--no-cone', '/.unixnu-placeholder'],
-                             check=True)
-          PY
-          python3 tools/fetch-sources.py
-      - name: pin sm8550 source
-        run: sed -i '' 's/a9f45dc60c035084b95463781538380f4c3606c9/2dc650ca76ae38715cd0712e60a44b14fe251745/' device/feeds.toml
-      - name: proprietary firmware (Touch, Keyboard, Video)
-        working-directory: device
-        run: python3 scripts/extract-files.py
-      - name: WCN7850 firmware (pinned)
-        working-directory: device
-        run: |
-          mkdir -p firmware/wcn7850
-          base=https://github.com/16639042170/sheng-ipados-build/releases/download/wifi-fw
-          for f in amss.bin m3.bin board-2.bin; do curl -fsSL -o "firmware/wcn7850/$f" "$base/$f"; done
-          sha256sum firmware/wcn7850/amss.bin firmware/wcn7850/m3.bin firmware/wcn7850/board-2.bin
       - name: package
         working-directory: device
         env:
@@ -156,7 +133,7 @@ jobs:
           OS_PROFILE: ${{ inputs.os }}
         run: |
           args=(--os "${OS_PROFILE:-27}" --uefi ../uefi-sheng --kernel-arg platform-sleep=1)
-          if [ "${OS_PROFILE:-27}" = "27" ] && [ "${INIT_DATA:-false}" = true ]; then
+          if [ "${INIT_DATA:-false}" = true ]; then
             args+=(--init-data)
           fi
           scripts/package.sh "${args[@]}"
@@ -166,7 +143,7 @@ jobs:
           path: |
             UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr
             UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/inputs.json
-          key: ${{ steps.seed-key.outputs.key }}-27
+          key: ${{ steps.seed-key.outputs.key }}
       - name: installation seed backup
         if: always() && hashFiles('UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr') != ''
         uses: actions/upload-artifact@v4

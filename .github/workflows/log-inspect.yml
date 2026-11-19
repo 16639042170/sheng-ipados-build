@@ -22,15 +22,14 @@ jobs:
           run-id: 44466962242
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: logs
-      - name: Show prelink tail
+      - name: Show files and tails
         run: |
-          for f in $(find logs -name prelink.log); do echo "=== $f"; tail -200 "$f"; done
+          find logs -type f -maxdepth 3 -printf '%p %s\n'
+          for f in $(find logs -type f); do echo "=== $f"; tail -200 "$f"; done > build-logs.txt
       - name: Commit inspected logs
         run: |
-          f=$(find logs -name prelink.log | head -1)
-          cp "$f" inspected-prelink.log
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add inspected-prelink.log
-          git commit -m 'capture run 16 prelink log'
+          git add build-logs.txt
+          git commit -m 'capture all run 16 build logs'
           git push

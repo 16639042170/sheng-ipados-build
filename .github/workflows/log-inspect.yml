@@ -22,11 +22,42 @@ jobs:
           run-id: 44427690964
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: logs
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-kernel
+          run-id: 44427690964
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: native
       - name: Show prelink and kernel tails
         run: |
           find logs -type f | sort | head -80
           for f in $(find logs -name prelink.log); do echo "=== $f"; cat "$f"; done
           for f in $(find logs -name kernel.log); do echo "=== tail $f"; tail -40 "$f"; done
+      - name: Parse native segment layout
+        run: |
+          python3 - <<'PY'
+          import struct
+          from pathlib import Path
+          out = []
+          for path in Path('native').rglob('*'):
+              if not path.is_file():
+                  continue
+              data = path.read_bytes()
+              if len(data) < 32:
+                  continue
+              magic, cpu, _, kind, count, size = struct.unpack_from('<6I', data, 0)
+              if magic != 0xfeedfacf:
+                  continue
+              out.append(f'{path} {len(data)}')
+              off = 32
+              for _ in range(count):
+                  cmd, length = struct.unpack_from('<II', data, off)
+                  if cmd == 0x19:
+                      name, va, vsize, foff, fsize = struct.unpack_from('<16s4Q', data, off + 8)
+                      out.append(f'{name.rstrip(bytes(1)).decode()} va={va:#x} vsize={vsize:#x} fileoff={foff:#x} filesize={fsize:#x}')
+                  off += length
+          Path('native-layout.txt').write_text('\n'.join(out) + '\n')
+          print('\n'.join(out))
       - name: Commit inspected logs
         run: |
           f=$(find logs -name prelink.log | head -1)
@@ -35,6 +66,6 @@ jobs:
           tail -80 "$k" > inspected-kernel-tail.log
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add inspected-prelink.log inspected-kernel-tail.log
-          git commit -m 'capture run 11 prelink and kernel logs'
+          git add inspected-prelink.log inspected-kernel-tail.log native-layout.txt
+          git commit -m 'capture run 11 prelink, kernel and native layout'
           git push

@@ -1,0 +1,61 @@
+name: preflight-patches
+# Fast check of the 82b847c + sleep-cherry-pick direction: fetch the two sleep commits onto the
+# kernel revision the device tree is written against, then apply every board patch in order.
+# No toolchain, no compile: ~3 minutes instead of an 80-minute blind build.
+on:
+  push:
+    paths:
+      - .github/workflows/preflight-patches.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  patches:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU
+          ref: 82b847c4ac3f68a57024b3082ffa3a03442defd9
+          path: kernel
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU-sheng
+          ref: c8f92b208068eeaa4cd2b0f592671f04ee70076e
+          path: device
+      - name: overlay the two sleep commits
+        working-directory: kernel
+        run: |
+          git config user.email ci@local
+          git config user.name ci
+          git log --oneline -1 90873392 2>/dev/null || true
+          for c in 90873392 099c72fd; do
+            git fetch --depth 200 origin "$c" || git fetch origin "$c"
+          done
+          git cherry-pick 90873392 099c72fd
+          git log --oneline -3
+      - name: apply every board patch in order
+        run: |
+          cd kernel
+          failed=0
+          while IFS= read -r name; do
+            [ -z "$name" ] && continue
+            case "$name" in \#*) continue;; esac
+            case "$name" in
+              sheng-startup-failure-log.patch|sheng-process-exit-log.patch) echo "skip $name"; continue;;
+            esac
+            patch="../device/patches/xnu-12377/$name"
+            if git apply --check "$patch" 2>err.txt; then
+              git apply "$patch"
+              echo "ok   $name"
+            else
+              echo "FAIL $name"
+              sed -n '1,6p' err.txt
+              failed=1
+            fi
+          done < ../device/patches/xnu-12377/series
+          exit $failed

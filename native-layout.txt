@@ -1,0 +1,19 @@
+native/macos-27.3-26C5035r/sheng_macos/tree/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837.unstripped.noctf 29414784
+__TEXT va=0xfffffff007004000 vsize=0x1dc000 fileoff=0x0 filesize=0x1dc000
+__DATA_CONST va=0xfffffff0071e0000 vsize=0x180000 fileoff=0x1dc000 filesize=0x180000
+__TEXT_EXEC va=0xfffffff007360000 vsize=0xc30000 fileoff=0x35c000 filesize=0xc30000
+__KLD va=0xfffffff007f90000 vsize=0x4000 fileoff=0xf8c000 filesize=0x4000
+__LASTDATA_CONST va=0xfffffff007f94000 vsize=0x4000 fileoff=0xf90000 filesize=0x4000
+__LAST va=0xfffffff007f98000 vsize=0x0 fileoff=0x0 filesize=0x0
+__KLDDATA va=0xfffffff007f98000 vsize=0x8000 fileoff=0xf94000 filesize=0x8000
+__DATA va=0xfffffff007fa0000 vsize=0x278000 fileoff=0xf9c000 filesize=0xa4000
+__BOOTDATA va=0xfffffff008218000 vsize=0xd8000 fileoff=0x1040000 filesize=0xd8000
+__PRELINK_TEXT va=0xfffffff004004000 vsize=0x0 fileoff=0x1118000 filesize=0x0
+__PRELINK_INFO va=0xfffffff0082f0000 vsize=0x0 fileoff=0x1118000 filesize=0x0
+__PLK_TEXT_EXEC va=0xfffffff0082f0000 vsize=0x0 fileoff=0x1118000 filesize=0x0
+__PRELINK_DATA va=0xfffffff0082f0000 vsize=0x0 fileoff=0x1118000 filesize=0x0
+__PLK_DATA_CONST va=0xfffffff0082f0000 vsize=0x0 fileoff=0x1118000 filesize=0x0
+__PLK_LLVM_COV va=0xfffffff0082f0000 vsize=0x0 fileoff=0x1118000 filesize=0x0
+__PLK_LINKEDIT va=0xfffffff0082f0000 vsize=0x0 fileoff=0x1118000 filesize=0x0
+__LINKINFO va=0xfffffff0082f0000 vsize=0x48000 fileoff=0x1118000 filesize=0x48000
+__LINKEDIT va=0xfffffff008338000 vsize=0xab0000 fileoff=0x1160000 filesize=0xaad580

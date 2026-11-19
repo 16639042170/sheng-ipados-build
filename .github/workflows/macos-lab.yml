@@ -287,16 +287,23 @@ jobs:
           """
           replacement = """        if used > self.mapped['__TEXT']:
                       size = self.segment('__TEXT')['size']
-                      self.cursor = align(max(self.cursor, max(s['va'] + s['size'] - self.cache.base for s in self.roots.values())))
-                      address = self.allocate(size)
-                      self.roots['__NATIVE_TEXT'] = dict(name='__NATIVE_TEXT', va=address, size=size,
-                                                         fileoff=address - self.cache.base, filesize=size)
-                      self.reserve('__TEXT', address)
-                      room = self.room('__NATIVE_TEXT', address)
+                      root = self.roots.pop('__PRELINK_INFO')
+                      self.info = root
+                      self.roots['__NATIVE_TEXT'] = dict(root, name='__NATIVE_TEXT')
+                      self.reserve('__TEXT', root['va'] + root['size'] - size)
+                      room = self.room('__NATIVE_TEXT', self.placements['__TEXT'])
                       self.mapped = {'__TEXT': min(size, room // 0x1000 * 0x1000)}
                       if used > self.mapped['__TEXT']:
                           raise ValueError(f'No room for {used:#x} bytes in __NATIVE_TEXT: {self.mapped["__TEXT"]:#x} bytes of whole pages are free')
           """
+          info_needle = """        info = self.roots['__PRELINK_INFO']
+                  info['va'] = self.allocate(info['size'])
+          """
+          info_replacement = """        info = self.info if hasattr(self, 'info') else self.roots['__PRELINK_INFO']
+                  info['va'] = self.allocate(info['size'])
+                  self.roots['__PRELINK_INFO'] = info
+          """
+          pairs = ((needle, replacement), (info_needle, info_replacement))
           patched = False
           for path in Path('UniXNU').rglob('fileset_layout.py'):
               text = path.read_text()
@@ -304,10 +311,16 @@ jobs:
                   print('already patched', path)
                   patched = True
                   continue
-              if needle not in text:
-                  print('needle not found', path)
+              missing = False
+              for needle, replacement in pairs:
+                  if needle not in text:
+                      print('needle not found', path)
+                      missing = True
+                      break
+                  text = text.replace(needle, replacement, 1)
+              if missing:
                   continue
-              path.write_text(text.replace(needle, replacement, 1))
+              path.write_text(text)
               print('patched', path)
               patched = True
           if not patched:

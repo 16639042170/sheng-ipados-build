@@ -1,0 +1,103 @@
+fetch rc=0
+== 90873392b74445c75a15d48769bd570322b8136a: 9087339 feat(power): select ArmCpu sleep and resume support (#299)
+hint: Recursive merging with submodules currently only supports trivial cases.
+hint: Please manually handle the merging of each conflicted submodule.
+hint: This can be accomplished with the following steps:
+hint:  - go to submodule (drivers/ArmCpu), and either merge commit 5f37026
+hint:    or update to an existing commit which has merged those changes
+hint:  - come back to superproject and run:
+hint:
+hint:       git add drivers/ArmCpu
+hint:
+hint:    to record the above merge or update
+hint:  - resolve any other conflicts in the superproject
+hint:  - commit the resulting index in the superproject
+hint:
+hint: Disable this message with "git config set advice.submoduleMergeConflict false"
+Auto-merging components.toml
+CONFLICT (content): Merge conflict in components.toml
+Failed to merge submodule drivers/ArmCpu (commits don't follow merge-base)
+CONFLICT (submodule): Merge conflict in drivers/ArmCpu
+CONFLICT (modify/delete): local-tools/kernel-compile-check.py deleted in HEAD and modified in 9087339 (feat(power): select ArmCpu sleep and resume support (#299)).  Version 9087339 (feat(power): select ArmCpu sleep and resume support (#299)) of local-tools/kernel-compile-check.py left in tree.
+error: could not apply 9087339... feat(power): select ArmCpu sleep and resume support (#299)
+hint: After resolving the conflicts, mark them with
+hint: "git add/rm <pathspec>", then run
+hint: "git cherry-pick --continue".
+hint: You can instead skip this commit with "git cherry-pick --skip".
+hint: To abort and get back to the state before "git cherry-pick",
+hint: run "git cherry-pick --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+cherry-pick rc=1
+resolving submodule conflict: components.toml
+pointer f9c31029f0a433fce13ef754f8880fd3ce4a7778
+fatal: cannot change to 'components.toml': Not a directory
+fatal: cannot change to 'components.toml': Not a directory
+fatal: cannot change to 'components.toml': Not a directory
+resolving submodule conflict: drivers/ArmCpu
+pointer 5f3702697ed80fd2e98594de1af7e32b4b77b08b
+From https://github.com/UniXNU/ArmCpu
+ * branch            5f3702697ed80fd2e98594de1af7e32b4b77b08b -> FETCH_HEAD
+Previous HEAD position was 93a5030 fix(armcpu): gate the Edge matrix on armcpu-edge
+HEAD is now at 5f37026 fix(power): enable platform suspend with the board sleep hook
+resolving submodule conflict: local-tools/kernel-compile-check.py
+pointer dbbb005547a03dae9846c1c1633bbbc9defb5d15
+fatal: cannot change to 'local-tools/kernel-compile-check.py': Not a directory
+fatal: cannot change to 'local-tools/kernel-compile-check.py': Not a directory
+fatal: cannot change to 'local-tools/kernel-compile-check.py': Not a directory
+M  components.toml
+M  drivers/ArmCpu
+A  local-tools/kernel-compile-check.py
+[detached HEAD a458e8b] feat(power): select ArmCpu sleep and resume support (#299)
+ Author: rponeawa <rponeawa@qq.com>
+ Date: Tue Nov 17 15:44:20 2026 +0800
+ 3 files changed, 76 insertions(+), 2 deletions(-)
+ create mode 100644 local-tools/kernel-compile-check.py
+continue rc=0
+== 099c72fd: 099c72f build(shader-cache): Select the merged registration and sleep fixes
+hint: Recursive merging with submodules currently only supports trivial cases.
+hint: Please manually handle the merging of each conflicted submodule.
+hint: This can be accomplished with the following steps:
+hint:  - go to submodule (drivers/AdrenoMetal), and either merge commit 8c7f950
+hint:    or update to an existing commit which has merged those changes
+hint:  - come back to superproject and run:
+hint:
+hint:       git add drivers/AdrenoMetal
+hint:
+hint:    to record the above merge or update
+hint:  - resolve any other conflicts in the superproject
+hint:  - commit the resulting index in the superproject
+hint:
+hint: Disable this message with "git config set advice.submoduleMergeConflict false"
+Auto-merging components.toml
+CONFLICT (content): Merge conflict in components.toml
+Failed to merge submodule drivers/AdrenoMetal (commits don't follow merge-base)
+CONFLICT (submodule): Merge conflict in drivers/AdrenoMetal
+error: could not apply 099c72f... build(shader-cache): Select the merged registration and sleep fixes
+hint: After resolving the conflicts, mark them with
+hint: "git add/rm <pathspec>", then run
+hint: "git cherry-pick --continue".
+hint: You can instead skip this commit with "git cherry-pick --skip".
+hint: To abort and get back to the state before "git cherry-pick",
+hint: run "git cherry-pick --abort".
+hint: Disable this message with "git config set advice.mergeConflict false"
+cherry-pick rc=1
+resolving submodule conflict: components.toml
+pointer 49036257de383fa713597af6d8957cbbbcb0c68d
+fatal: cannot change to 'components.toml': Not a directory
+fatal: cannot change to 'components.toml': Not a directory
+fatal: cannot change to 'components.toml': Not a directory
+resolving submodule conflict: drivers/AdrenoMetal
+pointer 8c7f9502de593c04a1003690f4a9441fe88551e8
+From https://github.com/UniXNU/AdrenoMetal
+ * branch            8c7f9502de593c04a1003690f4a9441fe88551e8 -> FETCH_HEAD
+Previous HEAD position was 243d63c feat(diagnostics): GMEM colour order self-test
+HEAD is now at 8c7f950 fix(shader-cache): Prevent idle sleep while compilation is running (#64)
+M  components.toml
+M  drivers/AdrenoMetal
+[detached HEAD 069caa0] build(shader-cache): Select the merged registration and sleep fixes
+ Author: Jelly10086 <Oo40469600@outlook.com>
+ Date: Tue Nov 17 17:10:50 2026 +0900
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+continue rc=0
+HEAD: 069caa0 build(shader-cache): Select the merged registration and sleep fixes
+ArmCpu: 160000 commit 5f3702697ed80fd2e98594de1af7e32b4b77b08b	drivers/ArmCpu

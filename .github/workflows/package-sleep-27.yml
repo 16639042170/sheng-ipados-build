@@ -9,8 +9,10 @@ name: package-sleep-27
 # proprietary-files.txt's mirror. Two boot-log diagnostic patches no longer apply to this
 # kernel and are dropped from the series; the sleep patch stays. Geni SPI is a submodule of the
 # kernel, so the package tree (a git archive) has no drivers/QcomGeniSpi: its headers are copied
-# next to TouchProbe and the build scripts are pointed at the workspace submodule. package.sh is
-# teed into build-logs so a silent death still leaves its last lines and a df snapshot.
+# next to TouchProbe and the build scripts are pointed at the workspace submodule. Probe
+# constants that this build variant leaves unused are marked unused so -Werror keeps its teeth
+# for real errors. package.sh is teed into build-logs so a silent death still leaves its last
+# lines and a df snapshot.
 on:
   push:
     paths:
@@ -179,8 +181,8 @@ jobs:
           import pathlib
           scripts = pathlib.Path('UniXNU/scripts')
           header = ("import os\n"
-                    "from pathlib import Path as _GeniPath\n"
-                    "QCOM_GENI_SPI = _GeniPath(os.environ['GITHUB_WORKSPACE']) / 'UniXNU/drivers/QcomGeniSpi'\n")
+                     "from pathlib import Path as _GeniPath\n"
+                     "QCOM_GENI_SPI = _GeniPath(os.environ['GITHUB_WORKSPACE']) / 'UniXNU/drivers/QcomGeniSpi'\n")
           touched = []
           for script in sorted(scripts.glob('build-*.py')):
               text = script.read_text()
@@ -188,8 +190,7 @@ jobs:
                   continue
               body = (text.replace("ROOT / 'drivers/QcomGeniSpi'", 'QCOM_GENI_SPI')
                           .replace("ROOT/'drivers/QcomGeniSpi/GeniSpi.c'", "QCOM_GENI_SPI/'GeniSpi.c'")
-                          .replace("ROOT/'drivers/QcomGeniSpi/GeniSpi.h'", "QCOM_GENI_SPI/'GeniSpi.h'")
-                          .replace("ROOT / 'drivers/QcomGeniSpi/GeniSpi.c'", "QCOM_GENI_SPI / 'GeniSpi.c'"))
+                          .replace("ROOT/'drivers/QcomGeniSpi/GeniSpi.h'", "QCOM_GENI_SPI/'GeniSpi.h'"))
               if body == text:
                   continue
               lines = body.splitlines(True)
@@ -203,6 +204,23 @@ jobs:
           PY
           cp UniXNU/drivers/QcomGeniSpi/*.h device/package/
           ls -l device/package/GeniSpi.h
+      - name: stop probe constants tripping -Werror
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          for cpp in sorted(pathlib.Path('device/package').glob('*.cpp')):
+              text = cpp.read_text()
+              lines, changed = [], 0
+              for line in text.splitlines(True):
+                  m = re.match(r'^(static const char \w+\[\])(.*)$', line.rstrip('\n'))
+                  if m and '=' in m.group(2) and '__attribute__((unused))' not in m.group(1):
+                      line = m.group(1) + ' __attribute__((unused))' + m.group(2) + '\n'
+                      changed += 1
+                  lines.append(line)
+              if changed:
+                  cpp.write_text(''.join(lines))
+                  print(cpp.name, 'marked unused:', changed)
+          PY
       - name: drop the two boot-log patches that no longer apply
         run: |
           python3 - <<'PY'

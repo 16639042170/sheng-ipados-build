@@ -3,7 +3,8 @@ name: package-sleep-27
 # scripts/package.sh of the pinned device checkout on a macOS runner, with the UniXNU 2026-11-18
 # pin (ArmCpu sleep #299 + AdrenoMetal sleep) and --kernel-arg platform-sleep=1. Upstream pins
 # the R2507 translator whose copied.rs defines read_pages only for linux/macos, so the iOS
-# target fails to compile; one step widens that cfg to ios before the bridge builds.
+# target fails to compile; one step widens that cfg to ios. The Ath12kWifi submodule keeps its
+# supplicant sources out of the checkout; one step fetches them before packaging.
 on:
   push:
     paths:
@@ -125,6 +126,9 @@ jobs:
           if not path.is_file() and os.environ.get('INIT_DATA', 'false') != 'true':
               raise SystemExit('No saved seed. Supply the ORIGINAL seed for an existing installation, or select init_data for a FIRST installation')
           PY
+      - name: Ath12kWifi supplicant sources
+        working-directory: device/drivers/Ath12kWifi
+        run: python3 tools/fetch-sources.py
       - name: let the Metal bridge read its own pages on iOS
         run: |
           python3 - <<'PY'

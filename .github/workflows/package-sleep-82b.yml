@@ -1,0 +1,185 @@
+name: package-sleep-82b
+# P1 on the kernel revision the device tree is written against: UniXNU 82b847c plus the two
+# sleep commits cherry-picked on top (ArmCpu 5f37026, AdrenoMetal 8c7f950), then the board's own
+# 25-patch series, which was authored against this revision. --kernel-arg platform-sleep=1.
+# No device-drift patches: the build should behave like the device repo's own CI.
+on:
+  push:
+    paths:
+      - .github/workflows/package-sleep-82b.yml
+  workflow_dispatch:
+    inputs:
+      init_data:
+        description: "Create a NEW installation seed if no saved seed exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: package-sleep-82b
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: macos-26
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU-sheng
+          ref: c8f92b208068eeaa4cd2b0f592671f04ee70076e
+          path: device
+          submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          repository: UniXNU/UniXNU
+          ref: 82b847c4ac3f68a57024b3082ffa3a03442defd9
+          path: UniXNU
+          fetch-depth: 0
+          submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          repository: UniXNU/uefi-sheng
+          ref: b303410c8e401fc9419ae65a024356ed09a438ef
+          path: uefi-sheng
+          submodules: recursive
+      - name: cherry-pick the two sleep commits
+        working-directory: UniXNU
+        run: |
+          set -e
+          git config user.email ci@local
+          git config user.name ci
+          git fetch --filter=blob:none origin main:refs/remotes/origin/main
+          for c in 90873392b74445c75a15d48769bd570322b8136a 099c72fd; do
+            if [ "$(git rev-list --parents -n1 $c | wc -w)" -gt 2 ]; then
+              git cherry-pick -m 1 "$c" || true
+            else
+              git cherry-pick "$c" || true
+            fi
+            if [ -f .git/CHERRY_PICK_HEAD ]; then
+              for sub in $(git diff --name-only --diff-filter=U); do
+                case "$sub" in
+                  components.toml) git checkout --theirs -- "$sub"; git add "$sub" ;;
+                  *.py) git add "$sub" ;;
+                  *) pointer=$(git ls-tree "$c" -- "$sub" | awk '{print $3}');
+                     git -C "$sub" fetch --depth 1 origin "$pointer"
+                     git -C "$sub" checkout "$pointer"
+                     git add "$sub" ;;
+                esac
+              done
+              git -c core.editor=true cherry-pick --continue
+            fi
+            git log --oneline -1
+          done
+          echo "ArmCpu: $(git ls-tree HEAD drivers/ArmCpu)"
+          echo "AdrenoMetal: $(git ls-tree HEAD drivers/AdrenoMetal)"
+      - name: tools
+        run: |
+          brew install dtc llvm lld cmake mtools ninja glslang shaderc spirv-tools bison pkgconf rustup blacktop/tap/ipsw
+          {
+            echo "$HOME/.cargo/bin"
+            echo "/opt/homebrew/opt/llvm/bin"
+            echo "/opt/homebrew/opt/lld/bin"
+            echo "/opt/homebrew/opt/bison/bin"
+          } >> "$GITHUB_PATH"
+          rustup toolchain install 1.98.0 --profile minimal --component rust-src
+      - name: platform seed
+        env:
+          seed: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
+        run: |
+          if ! [[ "$seed" =~ ^[0-9a-fA-F]{8}$ ]]; then
+            echo 'Set the repository secret UNIXNU_UNIQUE_CHIP_ID: 8 hex digits.' >&2
+            exit 1
+          fi
+      - name: seed cache identity
+        id: seed-key
+        env:
+          SEED: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, os
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('key=data-seed-v1-' + hashlib.sha256(os.environ['SEED'].encode()).hexdigest()[:16] + '-27\n')
+          PY
+      - uses: actions/cache/restore@v4
+        id: data-cache
+        with:
+          path: |
+            UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr
+            UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/inputs.json
+          key: ${{ steps.seed-key.outputs.key }}
+      - name: prepare preserved Data seed
+        env:
+          INIT_DATA: ${{ inputs.init_data }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          raw = json.loads(pathlib.Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          inputs = raw.get('inputs') or {}
+          path = pathlib.Path('UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr')
+          if not path.is_file() and os.environ.get('INIT_DATA', 'false') != 'true':
+              raise SystemExit('No saved seed and init_data not selected')
+          PY
+      - name: proprietary firmware (Touch, Keyboard, Video)
+        working-directory: device
+        run: python3 scripts/extract-files.py
+      - name: Ath12kWifi supplicant sources
+        working-directory: device/drivers/Ath12kWifi
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          lock = json.load(open('tools/source-lock.json'))
+          for name in ('linux', 'freebsd'):
+              source, directory = lock[name], 'deps/' + name
+              if not os.path.isdir(directory):
+                  subprocess.run(['git', 'clone', '--depth', '1', '--branch', source['ref'], '--filter=blob:none',
+                                  '--sparse', source['url'], directory], check=True)
+              head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
+              if head != source['commit']:
+                  subprocess.run(['git', '-C', directory, 'fetch', '--depth', '1', 'origin', source['commit']], check=True)
+                  subprocess.run(['git', '-C', directory, 'checkout', '--detach', 'FETCH_HEAD'], check=True)
+          PY
+          python3 tools/fetch-sources.py
+      - name: package
+        working-directory: device
+        env:
+          UNIXNU_UNIQUE_CHIP_ID: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+          INIT_DATA: ${{ inputs.init_data }}
+        run: |
+          log="$GITHUB_WORKSPACE/package.log"
+          { echo "=== start $(date -u) ==="; sw_vers; df -h /; } > "$log" 2>&1
+          args=(--os 27 --uefi ../uefi-sheng --kernel-arg platform-sleep=1)
+          if [ "${INIT_DATA:-false}" = true ]; then args+=(--init-data); fi
+          set +e
+          scripts/package.sh "${args[@]}" >> "$log" 2>&1
+          rc=$?
+          { echo "=== package exit $rc at $(date -u) ==="; df -h /; } >> "$log" 2>&1
+          tail -40 "$log"
+          exit $rc
+      - name: publish status
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git clone --depth 1 --branch build/sleep-27 "https://x-access-token:$GITHUB_TOKEN@github.com/16639042170/sheng-ipados-build.git" status-repo
+          cd status-repo
+          mkdir -p status
+          cp "$GITHUB_WORKSPACE/package.log" status/package-82b.log 2>/dev/null || true
+          { echo "run: $GITHUB_RUN_ID"; echo "conclusion: ${{ job.status }}"; echo "when: $(date -u)"; } > status/package-82b.txt
+          git -c user.email=ci@local -c user.name=ci add status/package-82b.log status/package-82b.txt
+          git -c user.email=ci@local -c user.name=ci commit -m "build82b: $GITHUB_RUN_ID" || true
+          git push
+      - name: images
+        uses: actions/upload-artifact@v4
+        with:
+          name: images-27-82b
+          retention-days: 2
+          if-no-files-found: error
+          path: |
+            UniXNU/out/sheng/*/*/boot/boot.img
+            UniXNU/out/sheng/*/*/payload/payload.img
+            UniXNU/out/sheng/*/*/kernel/kernel.macho
+            UniXNU/out/sheng/*/*/package.manifest.json

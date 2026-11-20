@@ -6,6 +6,7 @@ step is idempotent and prints what it changed, so repeated runs are cheap and
 the transcript lands in package.log (which the packaging step publishes).
 """
 
+import json
 import os
 import pathlib
 import re
@@ -50,6 +51,40 @@ def patch_headers():
                 bad.append(patch.relative_to(WS).as_posix())
     if bad:
         sys.exit('headerless new file in ' + ', '.join(bad))
+
+
+def metal2vulkan_pin():
+    """Pin the translator to the revision the GPU sleep bridge was written against.
+
+    82b847c records metal2vulkan 624bab39, but the bridge patches that come with
+    AdrenoMetal 8c7f950 (the GPU-sleep commit) are diffs against 555b13d5: patch
+    0004 carries `index a685b0dcb..`, which is that revision's
+    crates/metal2vulkan-air/src/canon/mod.rs blob, and the 0040 patch name says so
+    too. Applying them on 624bab39 fails at 0004, so move the recorded pin and
+    its file hashes together.
+    """
+    marker('metal2vulkan pin')
+    inputs = WS / 'UniXNU/scripts/data/gpu-metal-vulkan-inputs.json'
+    if not inputs.is_file():
+        sys.exit('gpu-metal-vulkan-inputs.json missing at ' + str(inputs))
+    commit = '555b13d57e09bff70996a88cff64f1275256d5cf'
+    hashes = {
+        'README.md': '7fdda13d0b2bb73779b97186acb6f36dca75506cefe41b03214685d25bb0ae10',
+        'Cargo.toml': '878c6ad5ce7efba58955114fe0c7a61a7372c9304b3ea244bc370cf158e5ad13',
+        'crates/metal2vulkan/src/device/policy.rs':
+            '9672e8d38f1cc497164fc21e4a44148eae10a7acd02f63c6fd746460c9cc2bf6',
+    }
+    data = json.loads(inputs.read_text())
+    translator = data.get('translator', {})
+    print('pin before:', translator.get('commit'))
+    if translator.get('commit') == commit and translator.get('files') == hashes:
+        print('already pinned')
+        return
+    translator['commit'] = commit
+    translator['files'] = hashes
+    data['translator'] = translator
+    inputs.write_text(json.dumps(data, indent=2) + '\n')
+    print('pin after:', commit)
 
 
 def bridge_patch_list():
@@ -186,6 +221,7 @@ def board_unused():
 
 if __name__ == '__main__':
     patch_headers()
+    metal2vulkan_pin()
     bridge_patch_list()
     read_pages_cfg()
     geni_spi()

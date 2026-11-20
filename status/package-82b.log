@@ -1,32 +1,32 @@
-=== markers Fri Nov 20 09:51:32 UTC 2026 ===
+=== markers Fri Nov 20 10:28:14 UTC 2026 ===
 [marker] checkouts
-[marker] cherry-pick Fri Nov 20 09:51:32 UTC 2026
-811d2d5 feat(power): select ArmCpu sleep and resume support (#299)
-c6a2b0a build(shader-cache): Select the merged registration and sleep fixes
+[marker] cherry-pick Fri Nov 20 10:28:14 UTC 2026
+be06fd4 feat(power): select ArmCpu sleep and resume support (#299)
+43fe666 build(shader-cache): Select the merged registration and sleep fixes
 160000 commit 5f3702697ed80fd2e98594de1af7e32b4b77b08b	drivers/ArmCpu
 160000 commit 8c7f9502de593c04a1003690f4a9441fe88551e8	drivers/AdrenoMetal
-[marker] tools Fri Nov 20 09:51:36 UTC 2026
+[marker] tools Fri Nov 20 10:28:18 UTC 2026
 [34m==>[0m [1mTapping blacktop/tap[0m
 Cloning into '/opt/homebrew/Library/Taps/blacktop/homebrew-tap'...
 Tapped 14 casks and 29 formulae (58 files, 1.8MB).
 [34m==>[0m [1mTrusted formula blacktop/tap/ipsw[0m
 ::warning::Treating blacktop/tap/ipsw as a formula. For the cask, use blacktop/tap/ipsw or specify the `--cask` flag. To silence this message, use the `--formula` flag.
-[33mWarning:[0m cmake 4.5.0 is already installed and up-to-date.
-To reinstall 4.5.0, run:
+[33mWarning:[0m cmake 4.4.5 is already installed and up-to-date.
+To reinstall 4.4.5, run:
   brew reinstall cmake
 [33mWarning:[0m ninja 1.13.2 is already installed and up-to-date.
 To reinstall 1.13.2, run:
   brew reinstall ninja
-[33mWarning:[0m pkgconf 3.0.11 is already installed and up-to-date.
-To reinstall 3.0.11, run:
+[33mWarning:[0m pkgconf 3.0.10 is already installed and up-to-date.
+To reinstall 3.0.10, run:
   brew reinstall pkgconf
-[33mWarning:[0m rustup 1.29.3 is already installed and up-to-date.
-To reinstall 1.29.3, run:
+[33mWarning:[0m rustup 1.29.2 is already installed and up-to-date.
+To reinstall 1.29.2, run:
   brew reinstall rustup
 [32m==>[0m [1mDownloading bottle manifests[0m
 ✔︎ Bottle Manifest dtc (1.8.1)
-✔︎ Bottle Manifest llvm (23.1.5_1)
-✔︎ Bottle Manifest lld (23.1.5)
+✔︎ Bottle Manifest llvm (23.1.4)
+✔︎ Bottle Manifest lld (23.1.4)
 ✔︎ Bottle Manifest mtools (4.0.50)
 ✔︎ Bottle Manifest glslang (16.6.0)
 ✔︎ Bottle Manifest shaderc (2026.4)
@@ -34,8 +34,8 @@ To reinstall 1.29.3, run:
 ✔︎ Bottle Manifest bison (3.8.2)
 [34m==>[0m [1mWould install 9 formulae:[0m
 dtc                1.8.1
-llvm               23.1.5_1
-lld                23.1.5
+llvm               23.1.4
+lld                23.1.4
 mtools             4.0.50
 glslang            16.6.0
 shaderc            2026.4
@@ -43,37 +43,37 @@ spirv-tools        1.4.363.0
 bison              3.8.2
 blacktop/tap/ipsw  3.1.749
 [34m==>[0m [1mWould install 1 dependency for llvm:[0m
-z3 5.4.1
+z3 5.3.3
 [34m==>[0m [1mWould install 2 dependencies for lld:[0m
-z3    5.4.1
-llvm  23.1.5_1
+z3    5.3.3
+llvm  23.1.4
 [34m==>[0m [1mWould install 2 dependencies for glslang:[0m
 spirv-headers  1.4.363.0
 spirv-tools    1.4.363.0
 [32m==>[0m [1mFetching downloads for: [32mdtc[39m, [32mllvm[39m, [32mlld[39m, [32mmtools[39m, [32mglslang[39m, [32mshaderc[39m, [32mspirv-tools[39m, [32mbison[39m and [32mipsw[39m[0m
-✔︎ Bottle glslang (16.6.0)
-✔︎ Bottle Manifest z3 (5.4.1)
-✔︎ Bottle Manifest spirv-headers (1.4.363.0)
+✔︎ Bottle Manifest z3 (5.3.3)
 ✔︎ Bottle dtc (1.8.1)
-✔︎ Bottle mtools (4.0.50)
-✔︎ Bottle lld (23.1.5)
+✔︎ Bottle lld (23.1.4)
+✔︎ Bottle Manifest spirv-headers (1.4.363.0)
+✔︎ Bottle glslang (16.6.0)
 ✔︎ Bottle shaderc (2026.4)
+✔︎ Bottle mtools (4.0.50)
 ✔︎ Formula ipsw (3.1.749)
 ✔︎ Bottle bison (3.8.2)
 ✔︎ Bottle spirv-tools (1.4.363.0)
 ✔︎ Bottle spirv-headers (1.4.363.0)
-✔︎ Bottle z3 (5.4.1)
-✔︎ Bottle llvm (23.1.5_1)
+✔︎ Bottle z3 (5.3.3)
+✔︎ Bottle llvm (23.1.4)
 [34m==>[0m [1mPouring dtc--1.8.1.arm64_tahoe.bottle.tar.gz[0m
 🍺  /opt/homebrew/Cellar/dtc/1.8.1: 19 files, 588.2KB
-[32m==>[0m [1mInstalling llvm dependency: [32mz3[39m (5.4.1)[0m
-[34m==>[0m [1mPouring z3--5.4.1.arm64_tahoe.bottle.tar.gz[0m
-🍺  /opt/homebrew/Cellar/z3/5.4.1: 156 files, 45.5MB
+[32m==>[0m [1mInstalling llvm dependency: [32mz3[39m (5.3.3)[0m
+[34m==>[0m [1mPouring z3--5.3.3.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/z3/5.3.3: 143 files, 44.9MB
 [32m==>[0m [1mInstalling [32mllvm[39m[0m
-[34m==>[0m [1mPouring llvm--23.1.5_1.arm64_tahoe.bottle.tar.gz[0m
-🍺  /opt/homebrew/Cellar/llvm/23.1.5_1: 9,338 files, 1.9GB
-[34m==>[0m [1mPouring lld--23.1.5.arm64_tahoe.bottle.tar.gz[0m
-🍺  /opt/homebrew/Cellar/lld/23.1.5: 44 files, 6MB
+[34m==>[0m [1mPouring llvm--23.1.4.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/llvm/23.1.4: 9,338 files, 1.9GB
+[34m==>[0m [1mPouring lld--23.1.4.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/lld/23.1.4: 44 files, 6MB
 [34m==>[0m [1mPouring mtools--4.0.50.arm64_tahoe.bottle.tar.gz[0m
 🍺  /opt/homebrew/Cellar/mtools/4.0.50: 69 files, 603.2KB
 [32m==>[0m [1mInstalling dependencies for glslang:[0m [32mspirv-headers[39m and [32mspirv-tools[39m[0m
@@ -91,7 +91,7 @@ spirv-tools    1.4.363.0
 [34m==>[0m [1mPouring bison--3.8.2.arm64_tahoe.bottle.tar.gz[0m
 🍺  /opt/homebrew/Cellar/bison/3.8.2: 100 files, 3.9MB
 [34m==>[0m [1mInstalling ipsw from blacktop/tap[0m
-🍺  /opt/homebrew/Cellar/ipsw/3.1.749: 245 files, 90.5MB, built in 13 seconds
+🍺  /opt/homebrew/Cellar/ipsw/3.1.749: 245 files, 90.5MB, built in 4 seconds
 [32m==>[0m [1mCaveats[0m
 Bash completion has been installed to:
   /opt/homebrew/etc/bash_completion.d
@@ -244,201 +244,6 @@ VideoProbe.cpp patched
 WifiNet.cpp patched
 WifiProbe.cpp patched
 [marker] fixups done
-=== package start Fri Nov 20 09:54:37 UTC 2026 ===
+[wrapper] package.sh dumps UniXNU logs into package.log
+=== package start Fri Nov 20 10:30:51 UTC 2026 ===
 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device
-== fetch https://github.com/UniXNU/UniXNU-sm8550-common.git 2dc650ca76ae
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/UniXNU-sm8550-common-d37b04b3 fetch -q --depth 1 origin 2dc650ca76ae38715cd0712e60a44b14fe251745
-== step deps
-== submodules /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU
-== submodules /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device
-== fetch https://github.com/apple-oss-distributions/xnu.git ac9718fb1af6
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/xnu-3199e8bc fetch -q --depth 1 origin ac9718fb1af618d5ce8678d0dc6e8a58f252216f
-== fetch https://github.com/apple-oss-distributions/libplatform.git b7ed7cf5cf7d
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/libplatform-e8393748 fetch -q --depth 1 origin b7ed7cf5cf7dd12b98672435db2225a860f199d8
-== fetch https://github.com/apple-oss-distributions/libdispatch.git 701f4d1a24ae
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/libdispatch-4941bbbe fetch -q --depth 1 origin 701f4d1a24ae9c6863901bbbb22624b7d1b87321
-== fetch https://github.com/apple-oss-distributions/AvailabilityVersions.git 149b1777f3e8
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/AvailabilityVersions-8280ff26 fetch -q --depth 1 origin 149b1777f3e8c2133042d8e188f72e3adf6a7110
-== fetch https://github.com/microsoft/mu_basecore.git cfb93724a06f
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/mu_basecore-8f10084c fetch -q --depth 1 origin cfb93724a06ff86ff5ba971413368a7809ee42a5
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/mu_basecore-8f10084c submodule update --init --depth 1 -- MdePkg/Library/BaseFdtLib/libfdt MdePkg/Library/MipiSysTLib/mipisyst BaseTools/Source/C/BrotliCompress/brotli MdeModulePkg/Library/BrotliCustomDecompressLib/brotli SecurityPkg/DeviceSecurity/SpdmLib/libspdm
-Submodule 'BaseTools/Source/C/BrotliCompress/brotli' (https://github.com/google/brotli) registered for path 'BaseTools/Source/C/BrotliCompress/brotli'
-Submodule 'MdeModulePkg/Library/BrotliCustomDecompressLib/brotli' (https://github.com/google/brotli) registered for path 'MdeModulePkg/Library/BrotliCustomDecompressLib/brotli'
-Submodule 'MdePkg/Library/BaseFdtLib/libfdt' (https://github.com/devicetree-org/pylibfdt.git) registered for path 'MdePkg/Library/BaseFdtLib/libfdt'
-Submodule 'MdePkg/Library/MipiSysTLib/mipisyst' (https://github.com/MIPI-Alliance/public-mipi-sys-t.git) registered for path 'MdePkg/Library/MipiSysTLib/mipisyst'
-Submodule 'SecurityPkg/DeviceSecurity/SpdmLib/libspdm' (https://github.com/DMTF/libspdm.git) registered for path 'SecurityPkg/DeviceSecurity/SpdmLib/libspdm'
-Cloning into '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/mu_basecore-8f10084c/BaseTools/Source/C/BrotliCompress/brotli'...
-Cloning into '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/mu_basecore-8f10084c/MdeModulePkg/Library/BrotliCustomDecompressLib/brotli'...
-Cloning into '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/mu_basecore-8f10084c/MdePkg/Library/BaseFdtLib/libfdt'...
-Cloning into '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/mu_basecore-8f10084c/MdePkg/Library/MipiSysTLib/mipisyst'...
-Cloning into '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/mu_basecore-8f10084c/SecurityPkg/DeviceSecurity/SpdmLib/libspdm'...
-From https://github.com/google/brotli
- * branch            e230f474b87134e8c6c85b630084c612057f253e -> FETCH_HEAD
-Submodule path 'BaseTools/Source/C/BrotliCompress/brotli': checked out 'e230f474b87134e8c6c85b630084c612057f253e'
-From https://github.com/google/brotli
- * branch            e230f474b87134e8c6c85b630084c612057f253e -> FETCH_HEAD
-Submodule path 'MdeModulePkg/Library/BrotliCustomDecompressLib/brotli': checked out 'e230f474b87134e8c6c85b630084c612057f253e'
-From https://github.com/devicetree-org/pylibfdt
- * branch            cfff805481bdea27f900c32698171286542b8d3c -> FETCH_HEAD
-Submodule path 'MdePkg/Library/BaseFdtLib/libfdt': checked out 'cfff805481bdea27f900c32698171286542b8d3c'
-From https://github.com/MIPI-Alliance/public-mipi-sys-t
- * branch            370b5944c046bab043dd8b133727b2135af7747a -> FETCH_HEAD
-Submodule path 'MdePkg/Library/MipiSysTLib/mipisyst': checked out '370b5944c046bab043dd8b133727b2135af7747a'
-From https://github.com/DMTF/libspdm
- * branch            f55cf6d48ec69b4ac60a63903e9c6a2cb0fd155d -> FETCH_HEAD
-Submodule path 'SecurityPkg/DeviceSecurity/SpdmLib/libspdm': checked out 'f55cf6d48ec69b4ac60a63903e9c6a2cb0fd155d'
-== fetch https://github.com/apple-oss-distributions/libpthread.git 1f4f5265b319
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/libpthread-4ff01b57 fetch -q --depth 1 origin 1f4f5265b319111142f1bf3a27d4484ef5a98314
-== fetch https://github.com/ONLYA/corecrypto-2023.git 11fba65b12d8
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/corecrypto-2023-c0651bae fetch -q --depth 1 origin 11fba65b12d8830630e248dfa8344caf8b065f26
-== fetch https://github.com/apple-oss-distributions/IOStorageFamily.git 7edb88fbae29
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/IOStorageFamily-a4f5240a fetch -q --depth 1 origin 7edb88fbae296fb7c8ce2f64e115e116e566d51c
-== fetch https://github.com/apple-oss-distributions/IOHIDFamily.git e31e90a24c27
-+ git -C /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/IOHIDFamily-f53ac321 fetch -q --depth 1 origin e31e90a24c27ad6cbe981650d12a1a4124065b03
-== wrote /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/unixnu.lock
-== ipsw: remote https://updates.cdn-apple.com/2026FallFCS/6074e110-d48d-40c2-b0e8-b611520941a3/iPad17,1,iPad17,2,iPad17,3,iPad17,4_27.0.1_24A446_Restore.ipsw
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/ipsw/24A446/kernelcache.decompressed
-== ipsw: extracting DeviceTree (Firmware/all_flash/DeviceTree.j820ap.im4p, 0 MiB)
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/ipsw/24A446/DeviceTree.j820ap.im4p
-== ipsw: extracting StaticTrustCache (Firmware/043-68950-668.dmg.aea.trustcache, 0 MiB)
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/ipsw/24A446/043-68950-668.dmg.aea.trustcache
-== ipsw: extracting Cryptex1,SystemTrustCache (Firmware/043-69086-713.dmg.aea.trustcache, 0 MiB)
-/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/ipsw/24A446/043-69086-713.dmg.aea.trustcache
-== step preflight
-== configuration sheng_ipados27_defconfig -> /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/.config
-== step patches
-== patch 01 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/bcm2837-machine-config.patch
-== patch 02 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/local-availability.patch
-== patch 03 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/cxx-flag-dependencies.patch
-== patch 04 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/external-archive-dependencies.patch
-== patch 05 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/public-entitlements-header.patch
-== patch 06 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/apple-only-cpu-tunables.patch
-== patch 07 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/non-apple-cache-monitor.patch
-== patch 08 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-4k-bootstrap-capacity.patch
-== patch 09 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-dt-panic-region.patch
-== patch 10 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/armvirt-platform-personality.patch
-== patch 11 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-aes-personality.patch
-== patch 12 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/null-root-media.patch
-== patch 13 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzx-pmap-sync-64bit-pa.patch
-== patch 14 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-quiet-managed-page-report.patch
-== patch 15 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-priv-work-interval.patch
-== patch 16 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-work-interval-instance.patch
-== patch 17 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-work-interval-soft-fail.patch
-== patch 18 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/kernel-sdk-root.patch
-== patch 19 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/source-machine-layer.patch
-== patch 20 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-pac-keys.patch
-== patch 21 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/public-entitlements-v2-header.patch
-== patch 22 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/no-apple-cpu-counters.patch
-== patch 23 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/apple-only-core-type.patch
-== patch 24 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/public-pmap-sart.patch
-== patch 25 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/public-pmap-without-monitor.patch
-== patch 26 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/optional-kernel-support-archive.patch
-== patch 27 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/public-missing-definitions.patch
-== patch 28 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/source-corecrypto14-bootstrap.patch
-== patch 29 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/source-pthread-bootstrap.patch
-== patch 30 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-arm-pan.patch
-== patch 31 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/mockfs-intermediate-lookup.patch
-== patch 32 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/mockfs-memory-device-width.patch
-== patch 33 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/mockfs-statfs.patch
-== patch 34 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/mockfs-test-file.patch
-== patch 35 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/mockfs-typed-allocation.patch
-== patch 36 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-lookup-trace.patch
-== patch 37 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-union-getattrlistbulk.patch
-== patch 38 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-union-lower-directory.patch
-== patch 39 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-work-interval-trace.patch
-== patch 40 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-component-load-probes.patch
-== patch 41 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-legacy-start.patch
-== patch 42 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-native-gpu-broker.patch
-== patch 43 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-owner-boot-manifest.patch
-== patch 44 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-owner-cache-carrier.patch
-== patch 45 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-owner-root-binding-audit.patch
-== patch 46 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-owner-root-crypto-probe.patch
-== patch 47 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-owner-z-air-init.patch
-== patch 48 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzw-native-adreno-sandbox-grant.patch
-== patch 49 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzwb-native-sandbox-grant-set-properties.patch
-== patch 50 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzyc-owner-skip-launch-constraints.patch
-== patch 51 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-4k-user-abi.patch
-== patch 52 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-4k-signature-hash-cache.patch
-== patch 53 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-4k-shared-region-slide.patch
-== patch 54 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-text-fixup.patch
-== patch 55 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/non-apple-iommu-bootstrap.patch
-== patch 56 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/offline-owner-systemos-mount.patch
-== patch 57 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzy-native-gpu-addon-mount.patch
-== patch 58 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzy-staged-system-apps.patch
-== patch 59 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzyb-native-cryptex-os-view.patch
-== patch 60 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/arm64e-threaded-starts.patch
-== patch 61 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-security-init.patch
-== patch 62 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/trustcache-runtime-layout.patch
-== patch 63 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/fileset-unmapped-call.patch
-== patch 64 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/native-4k-block-split.patch
-== patch 65 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/UniXNU-sm8550-common-d37b04b3/patches/xnu-12377/sheng-platform-power.patch
-== patch 66 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/UniXNU-sm8550-common-d37b04b3/patches/xnu-12377/native-smp-secondary.patch
-== patch 67 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/zzz-boot-progress.patch
-== patch 68 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/darwin26-syscalls.patch
-== patch 69 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/darwin26-kpi.patch
-== patch 70 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/patches/xnu-12377/darwin26-shared-region.patch
-== patch 71 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzye-sheng-cpu-idle.patch
-== patch 72 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzyf-sheng-amp.patch
-== patch 73 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzyd-sheng-audio-addon-mount.patch
-== patch 74 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/source-storage-runtime.patch
-== patch 75 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzzz-sheng-ipados27-bringup.patch
-== patch 76 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/vmwait-dyld-pager-source-release.patch
-== patch 77 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzzzzz-sheng-latency-trace.patch
-== patch 78 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzzzzzzz-sheng-exit-latency.patch
-== patch 79 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzzzzzzzz-sheng-unnest-trace.patch
-== patch 80 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-wifi-launchd-cache.patch
-== patch 81 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-bluetooth-runtime.patch
-== patch 82 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-wifi-association-event.patch
-== patch 83 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-main-thread-profile.patch
-== patch 84 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-cache-input-diagnostic.patch
-== patch 85 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-bluetooth-exit-diagnostic.patch
-== patch 86 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzzzzzzzzz-sheng-sigp-reinit-assert.patch
-== patch 87 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-appsync-runtime.patch
-== patch 88 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-appsync-user-trust.patch
-== patch 89 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzzzzzzzzzz-sheng-edge-matrix.patch
-== patch 90 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/zzzzzz-sheng-bsd-checkpoints.patch
-== patch 91 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-bootstrap-checkpoints.patch
-== patch 92 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-headless-startup-checkpoints.patch
-== patch 93 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-platform-sleep.patch
-== step build
-== submodules /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU
-== submodules /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device
-== tree /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree
-== ipsw: remote https://updates.cdn-apple.com/2026FallFCS/6074e110-d48d-40c2-b0e8-b611520941a3/iPad17,1,iPad17,2,iPad17,3,iPad17,4_27.0.1_24A446_Restore.ipsw
-== ipsw: extracting OS (043-68950-668.dmg.aea, 7872 MiB)
-== ipsw: fetching the AEA key of 043-68950-668.dmg.aea
-== ipsw: decrypting 043-68950-668.dmg.aea
-== ipsw: extracting Cryptex1,AppTrustCache (Firmware/043-69297-793.dmg.trustcache, 0 MiB)
-+ /opt/homebrew/opt/python@3.15/bin/python3.15 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py --request /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/request.json
-warning: build failed, waiting for other jobs to finish...
-
-Traceback (most recent call last):
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno-metal-plugin.py", line 57, in <module>
-    subprocess.run(['python3', ROOT / 'scripts/build-adreno-metal-bridge.py', '--target', BRIDGE_TARGET], check=True)
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 692, in run
-    raise CalledProcessError(retcode, process.args,
-                             output=stdout, stderr=stderr)
-subprocess.CalledProcessError: Command ['python3', PosixPath('/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno-metal-bridge.py'), '--target', 'ios27'] returned non-zero exit status 1.
-"disk31" ejected.
-Traceback (most recent call last):
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 271, in <module>
-    main()
-    ~~~~^^
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 198, in main
-    plugin = build_plugin(request['target'])
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 90, in build_plugin
-    script('build-adreno-metal-plugin.py', '--target', target, '--no-replay')
-    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 31, in script
-    run(sys.executable, ROOT / 'scripts' / name, *args, **kwargs)
-    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 27, in run
-    subprocess.run([str(part) for part in command], check=True, **kwargs)
-    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 692, in run
-    raise CalledProcessError(retcode, process.args,
-                             output=stdout, stderr=stderr)
-subprocess.CalledProcessError: Command ['/opt/homebrew/opt/python@3.15/bin/python3.15', '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno-metal-plugin.py', '--target', 'ios27', '--no-replay'] returned non-zero exit status 1.
-unixnu: /opt/homebrew/opt/python@3.15/bin/python3.15 failed (1); full log: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/logs/runtime.log
-=== package exit 1 at Fri Nov 20 10:23:12 UTC 2026 ===

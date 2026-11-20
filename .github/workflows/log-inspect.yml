@@ -22,14 +22,48 @@ jobs:
           run-id: 44658161377
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: logs
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-kernel
+          run-id: 44658161377
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: native
       - name: Show files and tails
         run: |
           find logs -type f -maxdepth 3 -printf '%p %s\n'
           for f in $(find logs -type f); do echo "=== $f"; tail -500 "$f"; done > build-logs.txt
+      - name: Parse native sections
+        run: |
+          python3 - <<'PY' > native-layout-new.txt
+          import struct
+          from pathlib import Path
+          matches = list(Path('native').rglob('mach.development.bcm2837.unstripped.noctf'))
+          print('files', matches)
+          for path in matches:
+              data = path.read_bytes()
+              print(path, len(data))
+              magic, cpu, _, kind, count, size = struct.unpack_from('<6I', data, 0)
+              print('header', hex(magic), hex(cpu), kind, count, size)
+              off = 32
+              for _ in range(count):
+                  cmd, length = struct.unpack_from('<II', data, off)
+                  if cmd == 0x19:
+                      name, va, vsize, foff, fsize = struct.unpack_from('<16s4Q', data, off + 8)
+                      name = name.rstrip(b'\0').decode()
+                      print(f'segment {name} va={va:#x} vmsize={vsize:#x} fileoff={foff:#x} filesize={fsize:#x}')
+                      if name == '__TEXT':
+                          nsects, = struct.unpack_from('<I', data, off + 64)
+                          for index in range(nsects):
+                              s = off + 72 + 80 * index
+                              sect, seg = (data[s+i:s+i+16].rstrip(b'\0').decode() for i in (0, 16))
+                              sva, ssize = struct.unpack_from('<QQ', data, s + 32)
+                              print(f'  section {seg},{sect} va={sva:#x} size={ssize:#x} end={sva+ssize:#x}')
+                  off += length
+          PY
       - name: Commit inspected logs
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add build-logs.txt
-          git commit -m 'capture run 33 build logs'
+          git add build-logs.txt native-layout-new.txt
+          git commit -m 'capture run 33 logs and native sections'
           git push

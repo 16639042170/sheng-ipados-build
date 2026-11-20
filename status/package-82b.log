@@ -397,3 +397,103 @@ Submodule path 'SecurityPkg/DeviceSecurity/SpdmLib/libspdm': checked out 'f55cf6
 == ipsw: decrypting 043-68950-668.dmg.aea
 == ipsw: extracting Cryptex1,AppTrustCache (Firmware/043-69297-793.dmg.trustcache, 0 MiB)
 + /opt/homebrew/opt/python@3.15/bin/python3.15 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py --request /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/request.json
+== runtime: Data UUID C3643318-CFE0-45E5-9E8E-9DF877EAADA3; preserved seed sha256 cc0576c6753ce0dcc514cb1850da3bf264f109ef47875153ddefbceab1555aec
+== kernel: XNU
+== kernel: prepare XNU ac9718fb1af6
++ git clone --quiet --shared --no-checkout /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/feeds/xnu-3199e8bc /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/.cache/xnu-work
+== kernel: patch bcm2837-machine-config.patch
+== kernel: patch local-availability.patch
+== kernel: patch cxx-flag-dependencies.patch
+== kernel: patch external-archive-dependencies.patch
+== kernel: patch public-entitlements-header.patch
+== kernel: patch apple-only-cpu-tunables.patch
+== kernel: patch non-apple-cache-monitor.patch
+== kernel: patch native-4k-bootstrap-capacity.patch
+== kernel: patch native-dt-panic-region.patch
+== kernel: patch armvirt-platform-personality.patch
+== kernel: patch native-aes-personality.patch
+== kernel: patch null-root-media.patch
+== kernel: patch zzx-pmap-sync-64bit-pa.patch
+== kernel: patch native-quiet-managed-page-report.patch
+== kernel: patch native-priv-work-interval.patch
+== kernel: patch native-work-interval-instance.patch
+== kernel: patch native-work-interval-soft-fail.patch
+== kernel: patch kernel-sdk-root.patch
+== kernel: patch source-machine-layer.patch
+== kernel: patch native-pac-keys.patch
+== kernel: patch public-entitlements-v2-header.patch
+== kernel: patch no-apple-cpu-counters.patch
+== kernel: patch apple-only-core-type.patch
+== kernel: patch public-pmap-sart.patch
+== kernel: patch public-pmap-without-monitor.patch
+== kernel: patch optional-kernel-support-archive.patch
+== kernel: patch public-missing-definitions.patch
+== kernel: patch source-corecrypto14-bootstrap.patch
+== kernel: patch source-pthread-bootstrap.patch
+== kernel: patch native-arm-pan.patch
+== kernel: patch mockfs-intermediate-lookup.patch
+== kernel: patch mockfs-memory-device-width.patch
+== kernel: patch mockfs-statfs.patch
+== kernel: patch mockfs-test-file.patch
+== kernel: patch mockfs-typed-allocation.patch
+== kernel: patch native-lookup-trace.patch
+== kernel: patch native-union-getattrlistbulk.patch
+== kernel: patch native-union-lower-directory.patch
+== kernel: patch native-work-interval-trace.patch
+== kernel: patch offline-component-load-probes.patch
+== kernel: patch offline-legacy-start.patch
+== kernel: patch offline-native-gpu-broker.patch
+== kernel: patch offline-owner-boot-manifest.patch
+== kernel: patch offline-owner-cache-carrier.patch
+== kernel: patch offline-owner-root-binding-audit.patch
+== kernel: patch offline-owner-root-crypto-probe.patch
+== kernel: patch offline-owner-z-air-init.patch
+== kernel: patch zzw-native-adreno-sandbox-grant.patch
+== kernel: patch zzwb-native-sandbox-grant-set-properties.patch
+== kernel: patch zzyc-owner-skip-launch-constraints.patch
+== kernel: patch native-4k-user-abi.patch
+== kernel: patch native-4k-signature-hash-cache.patch
+== kernel: patch native-4k-shared-region-slide.patch
+== kernel: patch native-text-fixup.patch
+== kernel: patch non-apple-iommu-bootstrap.patch
+== kernel: patch offline-owner-systemos-mount.patch
+== kernel: patch zzy-native-gpu-addon-mount.patch
+== kernel: patch zzy-staged-system-apps.patch
+== kernel: patch zzyb-native-cryptex-os-view.patch
+== kernel: patch arm64e-threaded-starts.patch
+== kernel: patch native-security-init.patch
+== kernel: patch trustcache-runtime-layout.patch
+== kernel: patch fileset-unmapped-call.patch
+== kernel: patch native-4k-block-split.patch
+== kernel: patch sheng-platform-power.patch
+== kernel: patch native-smp-secondary.patch
+== kernel: patch zzz-boot-progress.patch
+== kernel: patch darwin26-syscalls.patch
+== kernel: patch darwin26-kpi.patch
+== kernel: patch darwin26-shared-region.patch
+== kernel: patch zzye-sheng-cpu-idle.patch
+== kernel: patch zzyf-sheng-amp.patch
+== kernel: patch zzyd-sheng-audio-addon-mount.patch
+== kernel: patch source-storage-runtime.patch
+== kernel: patch zzzz-sheng-ipados27-bringup.patch
+== kernel: patch vmwait-dyld-pager-source-release.patch
+== kernel: patch zzzzzz-sheng-latency-trace.patch
+== kernel: patch zzzzzzzz-sheng-exit-latency.patch
+== kernel: patch zzzzzzzzz-sheng-unnest-trace.patch
+== kernel: patch sheng-wifi-launchd-cache.patch
+== kernel: patch sheng-bluetooth-runtime.patch
+== kernel: patch sheng-wifi-association-event.patch
+== kernel: patch sheng-main-thread-profile.patch
+== kernel: patch sheng-cache-input-diagnostic.patch
+== kernel: patch sheng-bluetooth-exit-diagnostic.patch
+== kernel: patch zzzzzzzzzz-sheng-sigp-reinit-assert.patch
+== kernel: patch sheng-appsync-runtime.patch
+== kernel: patch sheng-appsync-user-trust.patch
+== kernel: patch zzzzzzzzzzz-sheng-edge-matrix.patch
+== kernel: patch zzzzzz-sheng-bsd-checkpoints.patch
+== kernel: patch sheng-bootstrap-checkpoints.patch
+== kernel: patch sheng-headless-startup-checkpoints.patch
+== kernel: patch sheng-startup-failure-log.patch
+unixnu: XNU patch /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/patches/xnu-12377/sheng-startup-failure-log.patch: git failed (1): error: patch failed: bsd/kern/kern_exec.c:10118
+error: bsd/kern/kern_exec.c: patch does not apply
+=== package exit 1 at Fri Nov 20 04:18:18 UTC 2026 ===

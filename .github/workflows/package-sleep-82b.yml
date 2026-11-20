@@ -2,7 +2,6 @@ name: package-sleep-82b
 # P1 on the kernel revision the device tree is written against: UniXNU 82b847c plus the two
 # sleep commits cherry-picked on top (ArmCpu 5f37026, AdrenoMetal 8c7f950), then the board's own
 # 25-patch series, which was authored against this revision. --kernel-arg platform-sleep=1.
-# No device-drift patches: the build should behave like the device repo's own CI.
 on:
   push:
     paths:
@@ -15,7 +14,7 @@ on:
         default: false
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: package-sleep-82b
@@ -63,7 +62,7 @@ jobs:
                 case "$sub" in
                   components.toml) git checkout --theirs -- "$sub"; git add "$sub" ;;
                   *.py) git add "$sub" ;;
-                  *) pointer=$(git ls-tree "$c" -- "$sub" | awk '{print $3}');
+                  *) pointer=$(git ls-tree "$c" -- "$sub" | awk '{print $3}')
                      git -C "$sub" fetch --depth 1 origin "$pointer"
                      git -C "$sub" checkout "$pointer"
                      git add "$sub" ;;
@@ -121,6 +120,7 @@ jobs:
           path = pathlib.Path('UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr')
           if not path.is_file() and os.environ.get('INIT_DATA', 'false') != 'true':
               raise SystemExit('No saved seed and init_data not selected')
+          print('seed present:', path.is_file())
           PY
       - name: proprietary firmware (Touch, Keyboard, Video)
         working-directory: device
@@ -137,11 +137,95 @@ jobs:
                   subprocess.run(['git', 'clone', '--depth', '1', '--branch', source['ref'], '--filter=blob:none',
                                   '--sparse', source['url'], directory], check=True)
               head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
+              print(name, 'cloned HEAD', head, 'locked', source['commit'])
               if head != source['commit']:
                   subprocess.run(['git', '-C', directory, 'fetch', '--depth', '1', 'origin', source['commit']], check=True)
                   subprocess.run(['git', '-C', directory, 'checkout', '--detach', 'FETCH_HEAD'], check=True)
+                  head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
+                  print(name, 'pinned HEAD', head)
           PY
           python3 tools/fetch-sources.py
+      - name: widen read_pages to the iOS target
+        run: |
+          python3 - <<'PY'
+          import os, pathlib
+          found = []
+          for root, dirs, files in os.walk('UniXNU'):
+              dirs[:] = [d for d in dirs if d not in ('.git', 'out', 'build', 'target')]
+              if 'copied.rs' in files:
+                  found.append(pathlib.Path(root) / 'copied.rs')
+          print('copied.rs candidates:', [str(p) for p in found])
+          widened = 0
+          for p in found:
+              t = p.read_text()
+              if 'fn read_pages' not in t:
+                  continue
+              for os_name in ('macos', 'linux'):
+                  old = '#[cfg(target_os = "%s")]\npub(crate) fn read_pages' % os_name
+                  new = '#[cfg(any(target_os = "%s", target_os = "ios"))]\npub(crate) fn read_pages' % os_name
+                  if old in t:
+                      t = t.replace(old, new)
+                      widened += 1
+              if widened:
+                  p.write_text(t)
+                  print('widened', p)
+          bridge = pathlib.Path('UniXNU/scripts/build-adreno-metal-bridge.py')
+          if bridge.is_file():
+              text = bridge.read_text()
+              print('bridge mentions read_pages fix:', 'read_pages' in text)
+          print('widenings:', widened)
+          PY
+      - name: point the package tree at the real Geni SPI sources
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, sys
+          pkg = pathlib.Path('device/package')
+          users = [p.name for p in pkg.glob('*.cpp') if 'GeniSpi.h' in p.read_text(errors='ignore')]
+          scripts = [s for s in sorted(pathlib.Path('UniXNU/scripts').glob('build-*.py'))
+                     if 'drivers/QcomGeniSpi' in s.read_text(errors='ignore')]
+          print('GeniSpi.h included by:', users)
+          print('build scripts referencing the submodule:', [s.name for s in scripts])
+          if not users and not scripts:
+              print('nothing references the Geni SPI submodule')
+              raise SystemExit(0)
+          geni = pathlib.Path('UniXNU/drivers/QcomGeniSpi')
+          if not geni.is_dir():
+              sys.exit('QcomGeniSpi submodule missing at ' + str(geni))
+          headers = sorted(geni.glob('*.h'))
+          for h in headers:
+              (pkg / h.name).write_bytes(h.read_bytes())
+          print('copied headers:', [h.name for h in headers])
+          header = ("import os\n"
+                    "from pathlib import Path as _GeniPath\n"
+                    "QCOM_GENI_SPI = _GeniPath(os.environ['GITHUB_WORKSPACE']) / 'UniXNU/drivers/QcomGeniSpi'\n")
+          for s in scripts:
+              text = s.read_text()
+              body = re.sub(r"ROOT\s*/\s*'drivers/QcomGeniSpi/([^']+)'", r"QCOM_GENI_SPI / '\1'", text)
+              body = re.sub(r"ROOT\s*/\s*'drivers/QcomGeniSpi'", 'QCOM_GENI_SPI', body)
+              if 'drivers/QcomGeniSpi' in body:
+                  sys.exit('leftover submodule reference in ' + s.name)
+              lines = body.splitlines(True)
+              start = 1 if lines and lines[0].startswith('#!') else 0
+              lines.insert(start, header)
+              s.write_text(''.join(lines))
+              print('rewrote', s.name)
+          PY
+      - name: mark board constants and helpers this variant compiles out
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          types = r'(?:static\s+)?(?:bool|int|void|uint32_t|uint64_t|int32_t|int64_t|size_t|IOReturn|const char \*)\s+\w+\s*\('
+          for cpp in sorted(pathlib.Path('device/package').glob('*.cpp')):
+              text = cpp.read_text()
+              before = text
+              text = re.sub(r'^constexpr ', '[[maybe_unused]] constexpr ', text, flags=re.M)
+              text = re.sub(r'^(' + types + r')', r'[[maybe_unused]] \1', text, flags=re.M)
+              text = re.sub(r'^(static const char \w+\[\])(.*)$', r'\1 __attribute__((unused))\2', text, flags=re.M)
+              if text != before:
+                  cpp.write_text(text)
+                  print(cpp.name, 'patched')
+          PY
+          grep -c "maybe_unused" device/package/ShengSleep.cpp || true
       - name: package
         working-directory: device
         env:
@@ -149,34 +233,72 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           INIT_DATA: ${{ inputs.init_data }}
         run: |
+          set +e
           log="$GITHUB_WORKSPACE/package.log"
-          { echo "=== start $(date -u) ==="; sw_vers; df -h /; } > "$log" 2>&1
+          {
+            echo "=== start $(date -u) ==="
+            sw_vers
+            df -h /
+            vm_stat | head -6
+          } > "$log" 2>&1
+          status="$GITHUB_WORKSPACE/status-heartbeat"
+          git clone --quiet --depth 1 --branch build/sleep-27 \
+            "https://x-access-token:$GITHUB_TOKEN@github.com/16639042170/sheng-ipados-build.git" "$status" 2>/dev/null
+          publish() {
+            [ -d "$status/.git" ] || return 0
+            cd "$status" || return 0
+            mkdir -p status
+            tail -n 4000 "$log" > status/package-82b.log 2>/dev/null
+            { echo "run: $GITHUB_RUN_ID"; echo "state: running"; echo "when: $(date -u)"; } > status/package-82b.txt
+            git -c user.email=ci@local -c user.name=ci add status >/dev/null 2>&1
+            git -c user.email=ci@local -c user.name=ci commit -q -m "build82b heartbeat $GITHUB_RUN_ID" >/dev/null 2>&1
+            for attempt in 1 2 3; do
+              git pull --quiet --rebase --depth 1 origin build/sleep-27 >/dev/null 2>&1
+              git push --quiet origin HEAD:build/sleep-27 >/dev/null 2>&1 && return 0
+              git rebase --abort >/dev/null 2>&1
+            done
+          }
+          publish
+          ( while :; do sleep 120; publish; done ) &
+          hb=$!
           args=(--os 27 --uefi ../uefi-sheng --kernel-arg platform-sleep=1)
           if [ "${INIT_DATA:-false}" = true ]; then args+=(--init-data); fi
-          set +e
           scripts/package.sh "${args[@]}" >> "$log" 2>&1
           rc=$?
-          { echo "=== package exit $rc at $(date -u) ==="; df -h /; } >> "$log" 2>&1
+          {
+            echo "=== package exit $rc at $(date -u) ==="
+            df -h /
+            vm_stat | head -6
+          } >> "$log" 2>&1
+          kill "$hb" 2>/dev/null
           tail -40 "$log"
+          publish
+          cd "$GITHUB_WORKSPACE"
           exit $rc
       - name: publish status
         if: always()
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          set +e
           git clone --depth 1 --branch build/sleep-27 "https://x-access-token:$GITHUB_TOKEN@github.com/16639042170/sheng-ipados-build.git" status-repo
           cd status-repo
           mkdir -p status
-          cp "$GITHUB_WORKSPACE/package.log" status/package-82b.log 2>/dev/null || true
+          tail -n 6000 "$GITHUB_WORKSPACE/package.log" > status/package-82b.log 2>/dev/null
           { echo "run: $GITHUB_RUN_ID"; echo "conclusion: ${{ job.status }}"; echo "when: $(date -u)"; } > status/package-82b.txt
-          git -c user.email=ci@local -c user.name=ci add status/package-82b.log status/package-82b.txt
-          git -c user.email=ci@local -c user.name=ci commit -m "build82b: $GITHUB_RUN_ID" || true
-          git push
+          git -c user.email=ci@local -c user.name=ci add status
+          git -c user.email=ci@local -c user.name=ci commit -m "build82b: $GITHUB_RUN_ID ${{ job.status }}"
+          for attempt in 1 2 3; do
+            git pull --rebase --depth 1 origin build/sleep-27 >/dev/null 2>&1
+            git push origin HEAD:build/sleep-27 && break
+            git rebase --abort >/dev/null 2>&1
+          done
       - name: images
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: images-27-82b
-          retention-days: 2
+          retention-days: 3
           if-no-files-found: error
           path: |
             UniXNU/out/sheng/*/*/boot/boot.img

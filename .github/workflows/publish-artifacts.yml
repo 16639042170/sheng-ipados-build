@@ -1,1 +1,83 @@
-$(cat /tmp/publish-artifacts.yml)
+name: publish device artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Actions run id that produced sheng-macos-27
+        required: true
+        default: 44669777681
+      artifact_name:
+        description: Artifact name
+        required: true
+        default: sheng-macos-27
+      tag:
+        description: Release tag
+        required: true
+        default: sheng-macos-27-34-20261120
+  push:
+    paths:
+      - .github/ci/trigger-release.txt
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      RUN_ID: ${{ inputs.run_id || '44669777681' }}
+      ARTIFACT_NAME: ${{ inputs.artifact_name || 'sheng-macos-27' }}
+      TAG: ${{ inputs.tag || 'sheng-macos-27-34-20261120' }}
+    steps:
+      - name: Download the built artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          run-id: ${{ env.RUN_ID }}
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: incoming
+
+      - name: Inventory
+        run: |
+          set -euo pipefail
+          find incoming -type f -printf '%s\t%p\n' | sort -nr | tee inventory.txt
+          du -sh incoming
+          df -h
+
+      - name: Prepare release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          split_limit=$((1900 * 1024 * 1024))
+          while IFS= read -r -d '' f; do
+            base=$(basename "$f")
+            size=$(stat -c%s "$f")
+            if [ "$size" -gt "$split_limit" ]; then
+              split -b 1900M -d -a 3 "$f" "release/${base}.part-"
+            else
+              cp "$f" "release/$base"
+            fi
+          done < <(find incoming -type f -print0)
+          cp inventory.txt release/inventory.txt
+          (cd release && sha256sum * > SHA256SUMS.txt)
+          ls -lh release
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'EOF'
+          sheng macOS 27.3 (26C5035r) first-install images.
+
+          Built from official UniXNU/UniXNU, UniXNU/UniXNU-sheng and UniXNU/uefi-sheng.
+          GitHub Actions run: 44669777681.
+          Large files are split below 2 GiB because GitHub release assets are limited.
+          Reassemble with: cat <name>.part-* > <name>
+          EOF
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "sheng macOS 27.3 $TAG" --notes-file release-notes.md
+          gh release upload "$TAG" release/* --repo "$GITHUB_REPOSITORY" --clobber

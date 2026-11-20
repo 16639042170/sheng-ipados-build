@@ -59,9 +59,8 @@ def metal2vulkan_pin():
     """Pin the translator to the revision the GPU sleep bridge was written against.
 
     82b847c records metal2vulkan 624bab39, but AdrenoMetal 8c7f950 (the GPU-sleep
-    commit) carries a cumulative bridge snapshot whose base is 46e7cc96, and the
-    UniXNU main branch pins that same revision. 555b13d5 is an older line whose
-    translator lacks the API the bridge's Rust modules use.
+    commit) carries a cumulative bridge snapshot whose base is 46e7cc96, and
+    UniXNU 099c72fd pins that same revision for this AdrenoMetal generation.
     """
     marker('metal2vulkan pin')
     inputs = WS / 'UniXNU/scripts/data/gpu-metal-vulkan-inputs.json'
@@ -96,6 +95,33 @@ def metal2vulkan_pin():
         if head != commit:
             shutil.rmtree(cache)
             print('removed the stale metal2vulkan checkout')
+
+
+def bridge_script():
+    """Install the bridge script written for the AdrenoMetal revision we carry.
+
+    82b847c's copy predates the bridge's use of NMB_COMPONENT_ID and builds its
+    cargo environment without it, so the crate fails at env!(). 099c72fd is the
+    UniXNU commit that pins this AdrenoMetal generation (translator 46e7cc96,
+    snapshot 0063) and carries the matching script.
+    """
+    marker('bridge script')
+    url = ('https://raw.githubusercontent.com/UniXNU/UniXNU/'
+           '099c72fd40f45ecccb669fbfee85a2123ac21d3b/scripts/build-adreno-metal-bridge.py')
+    script = WS / 'UniXNU/scripts/build-adreno-metal-bridge.py'
+    if not script.is_file():
+        sys.exit('build-adreno-metal-bridge.py missing at ' + str(script))
+    try:
+        import urllib.request
+        data = urllib.request.urlopen(url, timeout=60).read().decode()
+    except Exception as error:
+        print('bridge script download failed:', error)
+        return
+    if 'NMB_COMPONENT_ID' not in data:
+        print('downloaded bridge script lacks NMB_COMPONENT_ID; keeping the tree copy')
+        return
+    script.write_text(data)
+    print('installed the bridge script of 099c72fd (%d bytes)' % len(data))
 
 
 def bridge_patch_list():
@@ -312,6 +338,7 @@ def board_unused():
 if __name__ == '__main__':
     patch_headers()
     metal2vulkan_pin()
+    bridge_script()
     bridge_patch_list()
     bridge_manifest_probe()
     bridge_error_window()

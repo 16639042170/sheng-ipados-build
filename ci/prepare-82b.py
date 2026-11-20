@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the pinned prepare script, then let the bridge build on iOS and dump its logs on failure."""
+"""Run the pinned prepare script, then fix the iOS bridge, the failure logs and the tree profiles link."""
 import os
 import pathlib
 import urllib.request
@@ -25,7 +25,7 @@ TAIL = """if __name__ == '__main__':
                 for path in glob.glob(pattern):
                     out.write('=== dump %s ===\\n' % path)
                     body = pathlib.Path(path).read_text(errors='replace').splitlines()
-                    out.write('\\n'.join(body[-500:]) + '\\n')
+                    out.write('\\n'.join(body[-600:]) + '\\n')
         raise
 """
 marker = "if __name__ == '__main__':\n    main()\n"
@@ -50,3 +50,15 @@ if OLD in script:
     print('[wrapper] bridge builds the Darwin paths for iOS too')
 else:
     print('[wrapper] bridge script already carries the iOS paths')
+
+tree_script = WS / 'UniXNU/scripts/unixnu/tree.py'
+tree_text = tree_script.read_text()
+OLD_TREE = "    (tree / 'scripts').mkdir(exist_ok=True)"
+NEW_TREE = """    if (ctx.root / 'profiles').is_dir():
+        _link(ctx.root / 'profiles', tree / 'profiles')
+    (tree / 'scripts').mkdir(exist_ok=True)"""
+if OLD_TREE in tree_text and '(ctx.root / ' not in tree_text:
+    tree_script.write_text(tree_text.replace(OLD_TREE, NEW_TREE))
+    print('[wrapper] the build tree carries profiles/')
+else:
+    print('[wrapper] tree script already links profiles')

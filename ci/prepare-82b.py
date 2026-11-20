@@ -72,16 +72,18 @@ NEW_LINK = """    if result.returncode:
         print('\\n'.join(tail), flush=True)
         raise SystemExit(result.returncode)"""
 if OLD_LINK in fileset_text:
-    fileset.write_text(fileset_text.replace(OLD_LINK, NEW_LINK))
+    fileset_text = fileset_text.replace(OLD_LINK, NEW_LINK)
     print('[wrapper] the fileset link failure prints its LTO log')
 else:
     print('[wrapper] fileset link already prints its log')
 
-board = WS / 'device/board.toml'
-board_text = board.read_text()
-REFERENCE = ', "build-fileset-release-reference.py --tree . --lto"'
-if REFERENCE in board_text:
-    board.write_text(board_text.replace(REFERENCE, '', 1))
-    print('[wrapper] the iPadOS 27 archives skip the LTO reference kernel, as the macOS profile does')
+# The reference kernel stubs the bring-up hooks behind weak_import. arm64e rejects an
+# undefined weak symbol outright, and the bring-up also adds sheng hooks and the entry point.
+OLD_STUB = r'^\s+"(_(?:native_[a-z0-9_]+|boot_log_rounds))"'
+NEW_STUB = r'^\s+"(_(?:native_[a-z0-9_]+|sheng_[a-z0-9_]+|boot_log_rounds|kernel_bootstrap))"'
+if OLD_STUB in fileset_text:
+    fileset_text = fileset_text.replace(OLD_STUB, NEW_STUB)
+    print('[wrapper] the reference kernel stubs the sheng hooks and the entry point too')
 else:
-    print('[wrapper] board already skips the reference kernel')
+    print('[wrapper] reference stubs already cover the sheng hooks')
+fileset.write_text(fileset_text)

@@ -41,9 +41,14 @@ jobs:
           ref: b303410c8e401fc9419ae65a024356ed09a438ef
           path: uefi-sheng
           submodules: recursive
+      - name: open the build log
+        run: |
+          log="$GITHUB_WORKSPACE/package.log"
+          { echo "=== markers $(date -u) ==="; echo "[marker] checkouts"; } > "$log"
       - name: cherry-pick the two sleep commits
         working-directory: UniXNU
         run: |
+          echo "[marker] cherry-pick $(date -u)" >> "$GITHUB_WORKSPACE/package.log"
           set -e
           git config user.email ci@local
           git config user.name ci
@@ -67,24 +72,29 @@ jobs:
               done
               git -c core.editor=true cherry-pick --continue
             fi
-            git log --oneline -1
+            git log --oneline -1 >> "$GITHUB_WORKSPACE/package.log" 2>&1
           done
+          git ls-tree HEAD drivers/ArmCpu >> "$GITHUB_WORKSPACE/package.log"
+          git ls-tree HEAD drivers/AdrenoMetal >> "$GITHUB_WORKSPACE/package.log"
       - name: tools
         run: |
-          brew install dtc llvm lld cmake mtools ninja glslang shaderc spirv-tools bison pkgconf rustup blacktop/tap/ipsw
+          echo "[marker] tools $(date -u)" >> "$GITHUB_WORKSPACE/package.log"
+          brew install dtc llvm lld cmake mtools ninja glslang shaderc spirv-tools bison pkgconf rustup blacktop/tap/ipsw >> "$GITHUB_WORKSPACE/package.log" 2>&1
           {
             echo "$HOME/.cargo/bin"
             echo "/opt/homebrew/opt/llvm/bin"
             echo "/opt/homebrew/opt/lld/bin"
             echo "/opt/homebrew/opt/bison/bin"
           } >> "$GITHUB_PATH"
-          rustup toolchain install 1.98.0 --profile minimal --component rust-src
+          rustup toolchain install 1.98.0 --profile minimal --component rust-src >> "$GITHUB_WORKSPACE/package.log" 2>&1
+          echo "[marker] tools done" >> "$GITHUB_WORKSPACE/package.log"
       - name: platform seed
         env:
           seed: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
         run: |
+          echo "[marker] platform seed" >> "$GITHUB_WORKSPACE/package.log"
           if ! [[ "$seed" =~ ^[0-9a-fA-F]{8}$ ]]; then
-            echo 'Set the repository secret UNIXNU_UNIQUE_CHIP_ID: 8 hex digits.' >&2
+            echo 'UNIXNU_UNIQUE_CHIP_ID is not an 8 hex digit seed' >> "$GITHUB_WORKSPACE/package.log"
             exit 1
           fi
       - name: seed cache identity
@@ -107,23 +117,42 @@ jobs:
       - name: prepare preserved Data seed
         env:
           INIT_DATA: ${{ inputs.init_data }}
+          CACHE_HIT: ${{ steps.data-cache.outputs.cache-hit }}
         run: |
-          python3 - <<'PY'
-          import json, os, pathlib
-          raw = json.loads(pathlib.Path(os.environ['GITHUB_EVENT_PATH']).read_text())
-          inputs = raw.get('inputs') or {}
-          path = pathlib.Path('UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/data.dbr')
-          if not path.is_file() and os.environ.get('INIT_DATA', 'false') != 'true':
+          echo "[marker] seed step cache-hit=${CACHE_HIT:-unknown}" >> "$GITHUB_WORKSPACE/package.log"
+          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
+          import json, os, pathlib, urllib.request, zipfile, shutil
+          runtime = pathlib.Path('UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime')
+          seed = runtime / 'data.dbr'
+          if not seed.is_file():
+              url = 'https://nightly.link/16639042170/sheng-ipados-build/actions/runs/44557722898/installation-seed-27.zip'
+              print('cache miss: fetching the seed backup', url)
+              tmp = pathlib.Path('seed-backup.zip')
+              with urllib.request.urlopen(url, timeout=600) as r, open(tmp, 'wb') as f:
+                  shutil.copyfileobj(r, f)
+              with zipfile.ZipFile(tmp) as z:
+                  names = [n for n in z.namelist() if n.endswith('data.dbr') or n.endswith('inputs.json')]
+                  print('artifact members:', names)
+                  for n in names:
+                      target = runtime / pathlib.Path(n).name
+                      runtime.mkdir(parents=True, exist_ok=True)
+                      with z.open(n) as src, open(target, 'wb') as dst:
+                          shutil.copyfileobj(src, dst)
+                      print('restored', target, target.stat().st_size)
+          print('seed present:', seed.is_file(), seed.stat().st_size if seed.is_file() else 0)
+          if not seed.is_file() and os.environ.get('INIT_DATA', 'false') != 'true':
               raise SystemExit('No saved seed and init_data not selected')
-          print('seed present:', path.is_file())
           PY
       - name: proprietary firmware (Touch, Keyboard, Video)
         working-directory: device
-        run: python3 scripts/extract-files.py
+        run: |
+          echo "[marker] firmware" >> "$GITHUB_WORKSPACE/package.log"
+          python3 scripts/extract-files.py >> "$GITHUB_WORKSPACE/package.log" 2>&1
       - name: Ath12kWifi supplicant sources
         working-directory: device/drivers/Ath12kWifi
         run: |
-          python3 - <<'PY'
+          echo "[marker] wifi sources" >> "$GITHUB_WORKSPACE/package.log"
+          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
           import json, os, subprocess
           lock = json.load(open('tools/source-lock.json'))
           for name in ('linux', 'freebsd'):
@@ -137,10 +166,11 @@ jobs:
                   subprocess.run(['git', '-C', directory, 'fetch', '--depth', '1', 'origin', source['commit']], check=True)
                   subprocess.run(['git', '-C', directory, 'checkout', '--detach', 'FETCH_HEAD'], check=True)
           PY
-          python3 tools/fetch-sources.py
+          python3 tools/fetch-sources.py >> "$GITHUB_WORKSPACE/package.log" 2>&1
       - name: give every new-file hunk in the patch set its header
         run: |
-          python3 - <<'PY'
+          echo "[marker] patch headers" >> "$GITHUB_WORKSPACE/package.log"
+          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
           import pathlib
           fixed = []
           for patch in sorted(pathlib.Path('UniXNU/patches').rglob('*.patch')):
@@ -168,7 +198,8 @@ jobs:
           PY
       - name: widen read_pages to the iOS target
         run: |
-          python3 - <<'PY'
+          echo "[marker] read_pages" >> "$GITHUB_WORKSPACE/package.log"
+          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
           import os, pathlib
           found = []
           for root, dirs, files in os.walk('UniXNU'):
@@ -196,7 +227,8 @@ jobs:
           PY
       - name: point the package tree at the real Geni SPI sources
         run: |
-          python3 - <<'PY'
+          echo "[marker] geni spi" >> "$GITHUB_WORKSPACE/package.log"
+          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
           import pathlib, re, sys
           pkg = pathlib.Path('device/package')
           users = [p.name for p in pkg.glob('*.cpp') if 'GeniSpi.h' in p.read_text(errors='ignore')]
@@ -230,7 +262,8 @@ jobs:
           PY
       - name: mark board constants and helpers this variant compiles out
         run: |
-          python3 - <<'PY'
+          echo "[marker] board unused" >> "$GITHUB_WORKSPACE/package.log"
+          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
           import pathlib, re
           types = r'(?:static\s+)?(?:bool|int|void|uint32_t|uint64_t|int32_t|int64_t|size_t|IOReturn|const char \*)\s+\w+\s*\('
           for cpp in sorted(pathlib.Path('device/package').glob('*.cpp')):
@@ -252,10 +285,7 @@ jobs:
         run: |
           set +e
           log="$GITHUB_WORKSPACE/package.log"
-          {
-            echo "=== start $(date -u) ==="
-            pwd
-          } > "$log" 2>&1
+          { echo "=== package start $(date -u) ==="; pwd; } >> "$log" 2>&1
           status="$GITHUB_WORKSPACE/status-heartbeat"
           git clone --quiet --depth 1 --branch build/sleep-27 \
             "https://x-access-token:$GITHUB_TOKEN@github.com/16639042170/sheng-ipados-build.git" "$status" 2>/dev/null

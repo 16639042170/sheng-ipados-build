@@ -10,3 +10,13 @@ Pages active:                                 162423.
 Pages inactive:                               136131.
 Pages speculative:                             30205.
 Pages throttled:                                   0.
+/Users/runner/work/_temp/c9d2a264-d11f-40e3-859a-9087e50e5807.sh: line 31: scripts/package.sh: No such file or directory
+=== package exit 127 at Fri Nov 20 01:02:09 UTC 2026 ===
+Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk2s1s1   320Gi    12Gi    90Gi    12%    459k  945M    0%   /
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                    10542.
+Pages active:                                 163408.
+Pages inactive:                               133383.
+Pages speculative:                             30121.
+Pages throttled:                                   0.

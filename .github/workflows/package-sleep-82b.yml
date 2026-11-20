@@ -160,19 +160,17 @@ jobs:
               t = p.read_text()
               if 'fn read_pages' not in t:
                   continue
+              changed = False
               for os_name in ('macos', 'linux'):
                   old = '#[cfg(target_os = "%s")]\npub(crate) fn read_pages' % os_name
                   new = '#[cfg(any(target_os = "%s", target_os = "ios"))]\npub(crate) fn read_pages' % os_name
                   if old in t:
                       t = t.replace(old, new)
-                      widened += 1
-              if widened:
+                      changed = True
+              if changed:
                   p.write_text(t)
+                  widened += 1
                   print('widened', p)
-          bridge = pathlib.Path('UniXNU/scripts/build-adreno-metal-bridge.py')
-          if bridge.is_file():
-              text = bridge.read_text()
-              print('bridge mentions read_pages fix:', 'read_pages' in text)
           print('widenings:', widened)
           PY
       - name: point the package tree at the real Geni SPI sources
@@ -240,27 +238,32 @@ jobs:
             sw_vers
             df -h /
             vm_stat | head -6
+            pwd
+            ls scripts/package.sh
           } > "$log" 2>&1
           status="$GITHUB_WORKSPACE/status-heartbeat"
           git clone --quiet --depth 1 --branch build/sleep-27 \
             "https://x-access-token:$GITHUB_TOKEN@github.com/16639042170/sheng-ipados-build.git" "$status" 2>/dev/null
           publish() {
             [ -d "$status/.git" ] || return 0
-            cd "$status" || return 0
-            mkdir -p status
-            tail -n 4000 "$log" > status/package-82b.log 2>/dev/null
-            { echo "run: $GITHUB_RUN_ID"; echo "state: running"; echo "when: $(date -u)"; } > status/package-82b.txt
-            git -c user.email=ci@local -c user.name=ci add status >/dev/null 2>&1
-            git -c user.email=ci@local -c user.name=ci commit -q -m "build82b heartbeat $GITHUB_RUN_ID" >/dev/null 2>&1
-            for attempt in 1 2 3; do
-              git pull --quiet --rebase --depth 1 origin build/sleep-27 >/dev/null 2>&1
-              git push --quiet origin HEAD:build/sleep-27 >/dev/null 2>&1 && return 0
-              git rebase --abort >/dev/null 2>&1
-            done
+            (
+              cd "$status" || exit 0
+              mkdir -p status
+              tail -n 4000 "$log" > status/package-82b.log 2>/dev/null
+              { echo "run: $GITHUB_RUN_ID"; echo "state: running"; echo "when: $(date -u)"; } > status/package-82b.txt
+              git -c user.email=ci@local -c user.name=ci add status >/dev/null 2>&1
+              git -c user.email=ci@local -c user.name=ci commit -q -m "build82b heartbeat $GITHUB_RUN_ID" >/dev/null 2>&1
+              for attempt in 1 2 3; do
+                git pull --quiet --rebase --depth 1 origin build/sleep-27 >/dev/null 2>&1
+                git push --quiet origin HEAD:build/sleep-27 >/dev/null 2>&1 && exit 0
+                git rebase --abort >/dev/null 2>&1
+              done
+            )
           }
           publish
           ( while :; do sleep 120; publish; done ) &
           hb=$!
+          cd "$GITHUB_WORKSPACE/device"
           args=(--os 27 --uefi ../uefi-sheng --kernel-arg platform-sleep=1)
           if [ "${INIT_DATA:-false}" = true ]; then args+=(--init-data); fi
           scripts/package.sh "${args[@]}" >> "$log" 2>&1
@@ -273,7 +276,6 @@ jobs:
           kill "$hb" 2>/dev/null
           tail -40 "$log"
           publish
-          cd "$GITHUB_WORKSPACE"
           exit $rc
       - name: publish status
         if: always()

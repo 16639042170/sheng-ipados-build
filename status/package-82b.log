@@ -400,3 +400,39 @@ Submodule path 'SecurityPkg/DeviceSecurity/SpdmLib/libspdm': checked out 'f55cf6
 == tree /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree
 == ipsw: remote https://updates.cdn-apple.com/2026FallFCS/6074e110-d48d-40c2-b0e8-b611520941a3/iPad17,1,iPad17,2,iPad17,3,iPad17,4_27.0.1_24A446_Restore.ipsw
 == ipsw: extracting OS (043-68950-668.dmg.aea, 7872 MiB)
+== ipsw: fetching the AEA key of 043-68950-668.dmg.aea
+== ipsw: decrypting 043-68950-668.dmg.aea
+== ipsw: extracting Cryptex1,AppTrustCache (Firmware/043-69297-793.dmg.trustcache, 0 MiB)
++ /opt/homebrew/opt/python@3.15/bin/python3.15 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py --request /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/request.json
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command ['git', '-C', '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/.cache/gpu-reference/metal2vulkan', 'apply', '--cached', '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/drivers/AdrenoMetal/bridge/patches/0046-main-optimizations-on-development-555b13d5.patch'] returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno-metal-plugin.py", line 57, in <module>
+    subprocess.run(['python3', ROOT / 'scripts/build-adreno-metal-bridge.py', '--target', BRIDGE_TARGET], check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 692, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command ['python3', PosixPath('/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno-metal-bridge.py'), '--target', 'ios27'] returned non-zero exit status 1.
+"disk7" ejected.
+Traceback (most recent call last):
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 271, in <module>
+    main()
+    ~~~~^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 198, in main
+    plugin = build_plugin(request['target'])
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 90, in build_plugin
+    script('build-adreno-metal-plugin.py', '--target', target, '--no-replay')
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 31, in script
+    run(sys.executable, ROOT / 'scripts' / name, *args, **kwargs)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 27, in run
+    subprocess.run([str(part) for part in command], check=True, **kwargs)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 692, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command ['/opt/homebrew/opt/python@3.15/bin/python3.15', '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno-metal-plugin.py', '--target', 'ios27', '--no-replay'] returned non-zero exit status 1.
+unixnu: /opt/homebrew/opt/python@3.15/bin/python3.15 failed (1); full log: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/logs/runtime.log
+=== package exit 1 at Fri Nov 20 05:58:13 UTC 2026 ===

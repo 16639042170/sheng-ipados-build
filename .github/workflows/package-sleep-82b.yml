@@ -1,7 +1,4 @@
 name: package-sleep-82b
-# P1 on the kernel revision the device tree is written against: UniXNU 82b847c plus the two
-# sleep commits cherry-picked on top (ArmCpu 5f37026, AdrenoMetal 8c7f950), then the board's own
-# 25-patch series, which was authored against this revision. --kernel-arg platform-sleep=1.
 on:
   push:
     paths:
@@ -72,8 +69,6 @@ jobs:
             fi
             git log --oneline -1
           done
-          echo "ArmCpu: $(git ls-tree HEAD drivers/ArmCpu)"
-          echo "AdrenoMetal: $(git ls-tree HEAD drivers/AdrenoMetal)"
       - name: tools
         run: |
           brew install dtc llvm lld cmake mtools ninja glslang shaderc spirv-tools bison pkgconf rustup blacktop/tap/ipsw
@@ -141,10 +136,38 @@ jobs:
               if head != source['commit']:
                   subprocess.run(['git', '-C', directory, 'fetch', '--depth', '1', 'origin', source['commit']], check=True)
                   subprocess.run(['git', '-C', directory, 'checkout', '--detach', 'FETCH_HEAD'], check=True)
-                  head = subprocess.check_output(['git', '-C', directory, 'rev-parse', 'HEAD'], text=True).strip()
-                  print(name, 'pinned HEAD', head)
           PY
           python3 tools/fetch-sources.py
+      - name: give every new-file hunk in the patch set its header
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          fixed = []
+          for patch in sorted(pathlib.Path('UniXNU/patches').rglob('*.patch')):
+              text = patch.read_text()
+              if '--- /dev/null' not in text:
+                  continue
+              lines = text.splitlines(True)
+              out, changed, i = [], False, 0
+              while i < len(lines):
+                  line = lines[i]
+                  out.append(line)
+                  if line.startswith('diff --git ') and i + 1 < len(lines) and lines[i + 1].startswith('--- /dev/null'):
+                      out.append('new file mode 100644\n')
+                      changed = True
+                  i += 1
+              if changed:
+                  patch.write_text(''.join(out))
+                  fixed.append(patch.as_posix())
+          print('new-file headers added:', fixed)
+          for patch in sorted(pathlib.Path('UniXNU/patches').rglob('*.patch')):
+              text = patch.read_text()
+              if '--- /dev/null' in text:
+                  miss = [i for i, l in enumerate(text.splitlines()) if l.startswith('diff --git ') and 'new file mode' not in text.splitlines()[i+1:i+2]]
+                  if miss:
+                      raise SystemExit('still headerless: ' + patch.as_posix())
+          print('all new-file hunks carry a header')
+          PY
       - name: widen read_pages to the iOS target
         run: |
           python3 - <<'PY'
@@ -184,7 +207,6 @@ jobs:
           print('GeniSpi.h included by:', users)
           print('build scripts referencing the submodule:', [s.name for s in scripts])
           if not users and not scripts:
-              print('nothing references the Geni SPI submodule')
               raise SystemExit(0)
           geni = pathlib.Path('UniXNU/drivers/QcomGeniSpi')
           if not geni.is_dir():
@@ -223,7 +245,6 @@ jobs:
                   cpp.write_text(text)
                   print(cpp.name, 'patched')
           PY
-          grep -c "maybe_unused" device/package/ShengSleep.cpp || true
       - name: package
         working-directory: device
         env:
@@ -235,11 +256,7 @@ jobs:
           log="$GITHUB_WORKSPACE/package.log"
           {
             echo "=== start $(date -u) ==="
-            sw_vers
-            df -h /
-            vm_stat | head -6
             pwd
-            ls scripts/package.sh
           } > "$log" 2>&1
           status="$GITHUB_WORKSPACE/status-heartbeat"
           git clone --quiet --depth 1 --branch build/sleep-27 \
@@ -268,11 +285,7 @@ jobs:
           if [ "${INIT_DATA:-false}" = true ]; then args+=(--init-data); fi
           scripts/package.sh "${args[@]}" >> "$log" 2>&1
           rc=$?
-          {
-            echo "=== package exit $rc at $(date -u) ==="
-            df -h /
-            vm_stat | head -6
-          } >> "$log" 2>&1
+          { echo "=== package exit $rc at $(date -u) ==="; } >> "$log" 2>&1
           kill "$hb" 2>/dev/null
           tail -40 "$log"
           publish

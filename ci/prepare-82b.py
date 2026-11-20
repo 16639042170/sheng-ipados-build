@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the pinned prepare script, then rewrite package.sh so failure logs land in package.log."""
+"""Run the pinned prepare script, then make the unixnu entry dump the real logs on failure."""
 import os
 import pathlib
 import urllib.request
@@ -10,23 +10,39 @@ source = urllib.request.urlopen(BASE, timeout=90).read().decode()
 exec(compile(source, BASE, 'exec'), {'__name__': '__main__'})
 
 WS = pathlib.Path(os.environ.get('GITHUB_WORKSPACE', '.'))
-UPSTREAM = ('https://raw.githubusercontent.com/UniXNU/UniXNU-sheng/'
-            'c8f92b208068eeaa4cd2b0f592671f04ee70076e/scripts/package.sh')
-original = urllib.request.urlopen(UPSTREAM, timeout=90).read().decode()
-old = 'exec python3 "$ROOT/unixnu" release -D "$DEVICE" "$@"'
-if old not in original:
-    raise SystemExit('[wrapper] package.sh layout changed')
-block = '''set +e
-LOG="${GITHUB_WORKSPACE:-$DEVICE/..}/package.log"
-python3 "$ROOT/unixnu" release -D "$DEVICE" "$@" >> "$LOG" 2>&1
-rc=$?
-if [ "$rc" -ne 0 ]; then
-  for f in "$ROOT"/out/*/*/logs/*.log "$ROOT"/build/adreno-metal-bridge/build-*.log; do
-    [ -f "$f" ] || continue
-    { echo "=== dump $f ==="; tail -n 400 "$f"; } >> "$LOG"
-  done
-fi
-exit "$rc"'''
-text = original.replace(old, block)
-(WS / 'device/scripts/package.sh').write_text(text)
-print('[wrapper] package.sh dumps the real logs into package.log')
+entry = WS / 'UniXNU/unixnu'
+if not entry.is_file():
+    raise SystemExit('[wrapper] unixnu entry missing')
+backup = entry.with_suffix('.real')
+if not backup.is_file():
+    backup.write_text(entry.read_text())
+SHIM = '''#!/usr/bin/env python3
+import glob
+import os
+import pathlib
+import runpy
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parent
+code = 0
+sys.argv[0] = str(ROOT / 'unixnu.real')
+try:
+    runpy.run_path(str(ROOT / 'unixnu.real'), run_name='__main__')
+except SystemExit as exc:
+    code = exc.code if isinstance(exc.code, int) else 1
+    raise
+finally:
+    if code not in (0, None):
+        log = pathlib.Path(os.environ.get('GITHUB_WORKSPACE', str(ROOT.parent))) / 'package.log'
+        patterns = (str(ROOT / 'out/*/*/logs/*.log'),
+                    str(ROOT / 'build/adreno-metal-bridge/build-*.log'))
+        with log.open('a', errors='replace') as out:
+            for pattern in patterns:
+                for path in glob.glob(pattern):
+                    out.write('=== dump %s ===\\n' % path)
+                    body = pathlib.Path(path).read_text(errors='replace').splitlines()
+                    out.write('\\n'.join(body[-500:]) + '\\n')
+'''
+entry.write_text(SHIM)
+os.chmod(entry, 0o755)
+print('[wrapper] unixnu entry dumps out logs and the bridge build log into package.log')

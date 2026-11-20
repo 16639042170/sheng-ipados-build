@@ -143,6 +143,31 @@ def geni_spi():
         print('rewrote', script.name)
 
 
+def conflicting_diagnostics():
+    """Drop diagnostic patches whose instrumentation a checkpoint patch already adds.
+
+    `sheng-startup-failure-log.patch` inserts boot_progress_stage() calls next to
+    the Data-mount block, but the checkpoint patches in the same series already
+    put those lines there, so the hunk no longer applies
+    (bsd/kern/kern_exec.c:10118). These two patches are observation only: the
+    functional code and the checkpoint logging stay in the tree, only the extra
+    boot_log_* hooks are lost.
+    """
+    marker('diagnostic patches')
+    series = WS / 'device/patches/xnu-12377/series'
+    if not series.is_file():
+        sys.exit('series missing at ' + str(series))
+    drop = {'sheng-startup-failure-log.patch', 'sheng-process-exit-log.patch'}
+    lines = series.read_text().splitlines(True)
+    removed = [line.strip() for line in lines
+               if line.strip() and pathlib.PurePosixPath(line.strip()).name in drop]
+    kept = [line for line in lines
+            if not line.strip() or pathlib.PurePosixPath(line.strip()).name not in drop]
+    if removed:
+        series.write_text(''.join(kept))
+    print('dropped diagnostic patches:', removed)
+
+
 def board_unused():
     """Mark board constants and helpers the iOS variant compiles out."""
     marker('board unused')
@@ -164,5 +189,6 @@ if __name__ == '__main__':
     bridge_patch_list()
     read_pages_cfg()
     geni_spi()
+    conflicting_diagnostics()
     board_unused()
     marker('fixups done')

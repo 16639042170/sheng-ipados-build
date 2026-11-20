@@ -24,6 +24,7 @@ def patch_layout(source):
         print('official __TEXT hole block not found', source)
         return False
     text = text.replace(old, '        self.mapped = {}\n', 1)
+    text = text.replace('        self.mapped = {}\n', '        self.mapped = {}\n        self.placements[\'__TEXT\'] = self.roots[\'__TEXT\'][\'va\']\n', 1)
     end = '        self.size = self.cursor\n'
     if end not in text:
         print('layout end marker not found', source)

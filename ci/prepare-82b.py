@@ -68,22 +68,29 @@ fileset_text = fileset.read_text()
 OLD_LINK = """    if result.returncode:
         raise SystemExit(result.returncode)"""
 NEW_LINK = """    if result.returncode:
-        tail = (output / f'{mode}-build.log').read_text(errors='replace').splitlines()[-300:]
+        tail = (output / f'{mode}-build.log').read_text(errors='replace').splitlines()[-2000:]
         print('\\n'.join(tail), flush=True)
         raise SystemExit(result.returncode)"""
 if OLD_LINK in fileset_text:
     fileset_text = fileset_text.replace(OLD_LINK, NEW_LINK)
-    print('[wrapper] the fileset link failure prints its LTO log')
+    print('[wrapper] the fileset link failure prints 2000 lines of its LTO log')
 else:
     print('[wrapper] fileset link already prints its log')
 
-# The reference kernel stubs the bring-up hooks behind weak_import. arm64e rejects an
-# undefined weak symbol outright, and the bring-up also adds sheng hooks and the entry point.
+# The reference kernel stubs every hook the bring-up leaves undefined: arm64e treats an
+# undefined weak_import as a hard error, and the comparison kernel never runs.
 OLD_STUB = r'^\s+"(_(?:native_[a-z0-9_]+|boot_log_rounds))"'
-NEW_STUB = r'^\s+"(_(?:native_[a-z0-9_]+|sheng_[a-z0-9_]+|boot_log_rounds|kernel_bootstrap))"'
+NEW_STUB = r'^  "(_[A-Za-z0-9_]+)"'
 if OLD_STUB in fileset_text:
     fileset_text = fileset_text.replace(OLD_STUB, NEW_STUB)
-    print('[wrapper] the reference kernel stubs the sheng hooks and the entry point too')
+    print('[wrapper] the reference kernel stubs every undefined symbol')
 else:
-    print('[wrapper] reference stubs already cover the sheng hooks')
+    print('[wrapper] reference stubs already cover every undefined symbol')
+OLD_STUB_WRITE = """    if stub_names:
+        (output / 'native-stubs.c').write_text"""
+NEW_STUB_WRITE = """    print('reference stubs', len(stub_names), stub_names[:8], flush=True)
+    if stub_names:
+        (output / 'native-stubs.c').write_text"""
+if OLD_STUB_WRITE in fileset_text:
+    fileset_text = fileset_text.replace(OLD_STUB_WRITE, NEW_STUB_WRITE)
 fileset.write_text(fileset_text)

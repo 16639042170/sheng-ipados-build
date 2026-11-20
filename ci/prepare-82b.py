@@ -76,3 +76,12 @@ if OLD_LINK in fileset_text:
     print('[wrapper] the fileset link failure prints its LTO log')
 else:
     print('[wrapper] fileset link already prints its log')
+
+board = WS / 'device/board.toml'
+board_text = board.read_text()
+REFERENCE = ', "build-fileset-release-reference.py --tree . --lto"'
+if REFERENCE in board_text:
+    board.write_text(board_text.replace(REFERENCE, '', 1))
+    print('[wrapper] the iPadOS 27 archives skip the LTO reference kernel, as the macOS profile does')
+else:
+    print('[wrapper] board already skips the reference kernel')

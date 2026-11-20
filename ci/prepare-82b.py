@@ -40,8 +40,9 @@ OLD = """if git_tree(['add', '-A']) != states[-1]:
 NEW = """# iOS takes the same Darwin host-memory paths the translator keys on macOS.
 for rust in sorted(SOURCE.glob('crates/*/src/**/*.rs')):
     was = rust.read_text()
-    now = was.replace('#[cfg(target_os = "macos")]',
-                      '#[cfg(any(target_os = "macos", target_os = "ios"))]')
+    now = was.replace('not(target_os = "macos")', 'NOT_DARWIN_PLACEHOLDER')
+    now = now.replace('target_os = "macos"', 'any(target_os = "macos", target_os = "ios")')
+    now = now.replace('NOT_DARWIN_PLACEHOLDER', 'not(any(target_os = "macos", target_os = "ios"))')
     if now != was:
         rust.write_text(now)"""
 if OLD in script:

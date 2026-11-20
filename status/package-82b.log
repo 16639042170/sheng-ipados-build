@@ -1,0 +1,177 @@
+=== markers Fri Nov 20 01:49:38 UTC 2026 ===
+[marker] checkouts
+[marker] cherry-pick Fri Nov 20 01:49:38 UTC 2026
+fa528b9 feat(power): select ArmCpu sleep and resume support (#299)
+7ce4571 build(shader-cache): Select the merged registration and sleep fixes
+160000 commit 5f3702697ed80fd2e98594de1af7e32b4b77b08b	drivers/ArmCpu
+160000 commit 8c7f9502de593c04a1003690f4a9441fe88551e8	drivers/AdrenoMetal
+[marker] tools Fri Nov 20 01:49:43 UTC 2026
+[34m==>[0m [1mTapping blacktop/tap[0m
+Cloning into '/opt/homebrew/Library/Taps/blacktop/homebrew-tap'...
+Tapped 14 casks and 29 formulae (58 files, 1.8MB).
+[34m==>[0m [1mTrusted formula blacktop/tap/ipsw[0m
+::warning::Treating blacktop/tap/ipsw as a formula. For the cask, use blacktop/tap/ipsw or specify the `--cask` flag. To silence this message, use the `--formula` flag.
+[33mWarning:[0m cmake 4.4.5 is already installed and up-to-date.
+To reinstall 4.4.5, run:
+  brew reinstall cmake
+[33mWarning:[0m ninja 1.13.2 is already installed and up-to-date.
+To reinstall 1.13.2, run:
+  brew reinstall ninja
+[33mWarning:[0m pkgconf 3.0.10 is already installed and up-to-date.
+To reinstall 3.0.10, run:
+  brew reinstall pkgconf
+[33mWarning:[0m rustup 1.29.3 is already installed and up-to-date.
+To reinstall 1.29.3, run:
+  brew reinstall rustup
+[32m==>[0m [1mDownloading bottle manifests[0m
+✔︎ Bottle Manifest dtc (1.8.1)
+✔︎ Bottle Manifest llvm (23.1.5_1)
+✔︎ Bottle Manifest lld (23.1.5)
+✔︎ Bottle Manifest mtools (4.0.50)
+✔︎ Bottle Manifest glslang (16.6.0)
+✔︎ Bottle Manifest shaderc (2026.4)
+✔︎ Bottle Manifest spirv-tools (1.4.363.0)
+✔︎ Bottle Manifest bison (3.8.2)
+[34m==>[0m [1mWould install 9 formulae:[0m
+dtc                1.8.1
+llvm               23.1.5_1
+lld                23.1.5
+mtools             4.0.50
+glslang            16.6.0
+shaderc            2026.4
+spirv-tools        1.4.363.0
+bison              3.8.2
+blacktop/tap/ipsw  3.1.749
+[34m==>[0m [1mWould install 1 dependency for llvm:[0m
+z3 5.4.1
+[34m==>[0m [1mWould install 2 dependencies for lld:[0m
+z3    5.4.1
+llvm  23.1.5_1
+[34m==>[0m [1mWould install 2 dependencies for glslang:[0m
+spirv-headers  1.4.363.0
+spirv-tools    1.4.363.0
+[32m==>[0m [1mFetching downloads for: [32mdtc[39m, [32mllvm[39m, [32mlld[39m, [32mmtools[39m, [32mglslang[39m, [32mshaderc[39m, [32mspirv-tools[39m, [32mbison[39m and [32mipsw[39m[0m
+✔︎ Bottle dtc (1.8.1)
+✔︎ Bottle Manifest z3 (5.4.1)
+✔︎ Bottle lld (23.1.5)
+✔︎ Bottle mtools (4.0.50)
+✔︎ Bottle Manifest spirv-headers (1.4.363.0)
+✔︎ Bottle glslang (16.6.0)
+✔︎ Bottle shaderc (2026.4)
+✔︎ Formula ipsw (3.1.749)
+✔︎ Bottle spirv-headers (1.4.363.0)
+✔︎ Bottle spirv-tools (1.4.363.0)
+✔︎ Bottle spirv-tools (1.4.363.0)
+✔︎ Bottle bison (3.8.2)
+✔︎ Bottle z3 (5.4.1)
+✔︎ Bottle llvm (23.1.5_1)
+[34m==>[0m [1mPouring dtc--1.8.1.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/dtc/1.8.1: 19 files, 588.2KB
+[32m==>[0m [1mInstalling llvm dependency: [32mz3[39m (5.4.1)[0m
+[34m==>[0m [1mPouring z3--5.4.1.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/z3/5.4.1: 156 files, 45.5MB
+[32m==>[0m [1mInstalling [32mllvm[39m[0m
+[34m==>[0m [1mPouring llvm--23.1.5_1.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/llvm/23.1.5_1: 9,338 files, 1.9GB
+[34m==>[0m [1mPouring lld--23.1.5.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/lld/23.1.5: 44 files, 6MB
+[34m==>[0m [1mPouring mtools--4.0.50.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/mtools/4.0.50: 69 files, 603.2KB
+[32m==>[0m [1mInstalling dependencies for glslang:[0m [32mspirv-headers[39m and [32mspirv-tools[39m[0m
+[32m==>[0m [1mInstalling glslang dependency: [32mspirv-headers[39m (1.4.363.0)[0m
+[34m==>[0m [1mPouring spirv-headers--1.4.363.0.all.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/spirv-headers/1.4.363.0: 98 files, 3.8MB
+[32m==>[0m [1mInstalling glslang dependency: [32mspirv-tools[39m (1.4.363.0)[0m
+[34m==>[0m [1mPouring spirv-tools--1.4.363.0.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/spirv-tools/1.4.363.0: 52 files, 10.2MB
+[32m==>[0m [1mInstalling [32mglslang[39m[0m
+[34m==>[0m [1mPouring glslang--16.6.0.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/glslang/16.6.0: 36 files, 3.2MB
+[34m==>[0m [1mPouring shaderc--2026.4.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/shaderc/2026.4: 21 files, 32.7MB
+[34m==>[0m [1mPouring bison--3.8.2.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/bison/3.8.2: 100 files, 3.9MB
+[34m==>[0m [1mInstalling ipsw from blacktop/tap[0m
+🍺  /opt/homebrew/Cellar/ipsw/3.1.749: 245 files, 90.5MB, built in 10 seconds
+[32m==>[0m [1mCaveats[0m
+Bash completion has been installed to:
+  /opt/homebrew/etc/bash_completion.d
+[34m==>[0m [1mllvm[0m
+CLANG_CONFIG_FILE_SYSTEM_DIR: /opt/homebrew/etc/clang
+CLANG_CONFIG_FILE_USER_DIR:   ~/.config/clang
+
+LLD and LLDB are now provided in separate formulae:
+  brew install lld
+  brew install lldb
+
+Z3 solver support will be removed in LLVM 24 as it is unsupported upstream,
+see https://github.com/llvm/llvm-project/pull/205370
+
+Using `clang`, `clang++`, etc., requires a CLT installation at `/Library/Developer/CommandLineTools`.
+If you don't want to install the CLT, you can write appropriate configuration files pointing to your
+SDK at ~/.config/clang.
+
+To use the bundled libunwind please use the following LDFLAGS:
+  LDFLAGS="-L/opt/homebrew/opt/llvm/lib/unwind -lunwind"
+
+To use the bundled libc++ please use the following LDFLAGS:
+  LDFLAGS="-L/opt/homebrew/opt/llvm/lib/c++ -L/opt/homebrew/opt/llvm/lib/unwind -lunwind"
+Features newer than system libc++ will require the following define to enable
+(support for this may be removed in a future major LLVM release):
+  CPPFLAGS="-D_LIBCPP_DISABLE_AVAILABILITY"
+
+NOTE: You probably want to use the libunwind and libc++ provided by macOS unless you know what you're doing.
+
+llvm is keg-only, which means it was not symlinked into /opt/homebrew,
+because macOS already provides this software and installing another version in
+parallel can cause all kinds of trouble.
+
+If you need to have llvm first in your PATH, run:
+  printf '%s\n' export\ PATH\=/opt/homebrew/opt/llvm/bin:\$PATH >> /Users/runner/.bash_profile
+
+For compilers to find llvm you may need to set:
+  export LDFLAGS=-L/opt/homebrew/opt/llvm/lib
+  export CPPFLAGS=-I/opt/homebrew/opt/llvm/include
+
+For cmake to find llvm you may need to set:
+  export CMAKE_PREFIX_PATH=/opt/homebrew/opt/llvm
+[34m==>[0m [1mbison[0m
+bison is keg-only, which means it was not symlinked into /opt/homebrew,
+because macOS already provides this software and installing another version in
+parallel can cause all kinds of trouble.
+
+If you need to have bison first in your PATH, run:
+  printf '%s\n' export\ PATH\=/opt/homebrew/opt/bison/bin:\$PATH >> /Users/runner/.bash_profile
+
+For compilers to find bison you may need to set:
+  export LDFLAGS=-L/opt/homebrew/opt/bison/lib
+info: syncing channel updates for 1.98.0-aarch64-apple-darwin
+info: latest update on 2026-08-20 for version 1.98.0 (88d9e12ae 2026-08-18)
+info: downloading 4 components
+
+  1.98.0-aarch64-apple-darwin installed - rustc 1.98.0 (88d9e12ae 2026-08-18)
+
+info: self-update is disabled for this build of rustup
+info: any updates to rustup will need to be fetched with your system package manager
+[marker] tools done
+[marker] platform seed
+[marker] seed step cache-hit=true
+seed present: True 1220736
+[marker] firmware
+extracted novatek/novatek_nt36532_n81a_fw_csot.bin (245760 bytes)
+extracted nanosic/MCU_Upgrade.bin (82524 bytes)
+extracted qcom/sm8550/sheng/vpu30_4v.mbn (2306664 bytes)
+[marker] wifi sources
+Cloning into 'deps/linux'...
+warning: filtering not recognized by server, ignoring
+warning: refs/tags/v7.0.14 b38d6c0b6e7f406a7feb7d46f184ec3edaac8c3b is not a commit!
+Cloning into 'deps/freebsd'...
+From https://github.com/freebsd/freebsd-src
+ * branch            95719d8a895bf8170851e9844d9b4092b1d2b6fe -> FETCH_HEAD
+HEAD is now at 95719d8 Add UPDATING entries and bump version
+linux cloned HEAD 458c6079fc1d41d564c37679c8ace02cd83ee817 locked 458c6079fc1d41d564c37679c8ace02cd83ee817
+freebsd cloned HEAD bb03631fe3b7a8bfa8071e8063f554528d4e4618 locked 95719d8a895bf8170851e9844d9b4092b1d2b6fe
+verified locked Linux/mac80211/cfg80211, FreeBSD and supplicant sources: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/drivers/Ath12kWifi/out/source-identity.json
+[marker] patch headers
+new-file headers added: ['UniXNU/patches/mesa/turnip-frame-diagnostics.patch']
+headerless new file in UniXNU/patches/xnu/zzz-boot-progress.patch

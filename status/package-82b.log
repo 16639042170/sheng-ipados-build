@@ -586,3 +586,8 @@ build-xnu-4k-baseline.sh: line 829: make -C .cache/xnu-work "${XNU_BUILD_TARGET:
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-gop-legacy-display-27.py
 == kernel: archive-20-build-fileset-release-reference
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-fileset-release-reference.py --tree . --lto
+RELEASE reference exit 2 log /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/build/xnu/fileset-reference/lto-922d8c9ab02d5aa8/lto-build.log
+removed 67 unavailable forced exports; linking again
+RELEASE reference exit 2 log /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/build/xnu/fileset-reference/lto-922d8c9ab02d5aa8/lto-build.log
+unixnu: python3 failed (2); full log: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/logs/archive-20-build-fileset-release-reference.log
+=== package exit 1 at Fri Nov 20 15:40:19 UTC 2026 ===

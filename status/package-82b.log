@@ -1,0 +1,12 @@
+=== start Fri Nov 20 01:02:06 UTC 2026 ===
+ProductName:		macOS
+ProductVersion:		26.7.2
+BuildVersion:		25G332
+Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk2s1s1   320Gi    12Gi    90Gi    12%    459k  945M    0%   /
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                     8314.
+Pages active:                                 162423.
+Pages inactive:                               136131.
+Pages speculative:                             30205.
+Pages throttled:                                   0.

@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - .github/workflows/package-sleep-82b.yml
+      - ci/**
   workflow_dispatch:
     inputs:
       init_data:
@@ -41,6 +42,11 @@ jobs:
           ref: b303410c8e401fc9419ae65a024356ed09a438ef
           path: uefi-sheng
           submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          repository: 16639042170/sheng-ipados-build
+          ref: build/sleep-27
+          path: ci-repo
       - name: open the build log
         run: |
           log="$GITHUB_WORKSPACE/package.log"
@@ -167,115 +173,8 @@ jobs:
                   subprocess.run(['git', '-C', directory, 'checkout', '--detach', 'FETCH_HEAD'], check=True)
           PY
           python3 tools/fetch-sources.py >> "$GITHUB_WORKSPACE/package.log" 2>&1
-      - name: give every new-file hunk in the patch set its header
-        run: |
-          echo "[marker] patch headers" >> "$GITHUB_WORKSPACE/package.log"
-          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
-          import pathlib
-          fixed = []
-          for patch in sorted(pathlib.Path('UniXNU/patches').rglob('*.patch')):
-              text = patch.read_text()
-              if '--- /dev/null' not in text:
-                  continue
-              lines = text.splitlines(True)
-              out = []
-              for i, line in enumerate(lines):
-                  out.append(line)
-                  if line.startswith('diff --git ') and i + 1 < len(lines) and lines[i + 1].startswith('--- /dev/null'):
-                      out.append('new file mode 100644\n')
-                      fixed.append(patch.as_posix())
-              patch.write_text(''.join(out))
-          print('new-file headers added:', fixed)
-          for patch in sorted(pathlib.Path('UniXNU/patches').rglob('*.patch')):
-              lines = patch.read_text().splitlines(True)
-              for i, line in enumerate(lines):
-                  if not line.startswith('--- /dev/null'):
-                      continue
-                  window = lines[max(0, i - 3):i]
-                  if not any(w.startswith('new file mode') for w in window):
-                      raise SystemExit('headerless new file in ' + patch.as_posix())
-          print('all new-file sections carry a header')
-          PY
-      - name: widen read_pages to the iOS target
-        run: |
-          echo "[marker] read_pages" >> "$GITHUB_WORKSPACE/package.log"
-          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
-          import os, pathlib
-          found = []
-          for root, dirs, files in os.walk('UniXNU'):
-              dirs[:] = [d for d in dirs if d not in ('.git', 'out', 'build', 'target')]
-              if 'copied.rs' in files:
-                  found.append(pathlib.Path(root) / 'copied.rs')
-          print('copied.rs candidates:', [str(p) for p in found])
-          widened = 0
-          for p in found:
-              t = p.read_text()
-              if 'fn read_pages' not in t:
-                  continue
-              changed = False
-              for os_name in ('macos', 'linux'):
-                  old = '#[cfg(target_os = "%s")]\npub(crate) fn read_pages' % os_name
-                  new = '#[cfg(any(target_os = "%s", target_os = "ios"))]\npub(crate) fn read_pages' % os_name
-                  if old in t:
-                      t = t.replace(old, new)
-                      changed = True
-              if changed:
-                  p.write_text(t)
-                  widened += 1
-                  print('widened', p)
-          print('widenings:', widened)
-          PY
-      - name: point the package tree at the real Geni SPI sources
-        run: |
-          echo "[marker] geni spi" >> "$GITHUB_WORKSPACE/package.log"
-          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
-          import pathlib, re, sys
-          pkg = pathlib.Path('device/package')
-          users = [p.name for p in pkg.glob('*.cpp') if 'GeniSpi.h' in p.read_text(errors='ignore')]
-          scripts = [s for s in sorted(pathlib.Path('UniXNU/scripts').glob('build-*.py'))
-                     if 'drivers/QcomGeniSpi' in s.read_text(errors='ignore')]
-          print('GeniSpi.h included by:', users)
-          print('build scripts referencing the submodule:', [s.name for s in scripts])
-          if not users and not scripts:
-              raise SystemExit(0)
-          geni = pathlib.Path('UniXNU/drivers/QcomGeniSpi')
-          if not geni.is_dir():
-              sys.exit('QcomGeniSpi submodule missing at ' + str(geni))
-          headers = sorted(geni.glob('*.h'))
-          for h in headers:
-              (pkg / h.name).write_bytes(h.read_bytes())
-          print('copied headers:', [h.name for h in headers])
-          header = ("import os\n"
-                    "from pathlib import Path as _GeniPath\n"
-                    "QCOM_GENI_SPI = _GeniPath(os.environ['GITHUB_WORKSPACE']) / 'UniXNU/drivers/QcomGeniSpi'\n")
-          for s in scripts:
-              text = s.read_text()
-              body = re.sub(r"ROOT\s*/\s*'drivers/QcomGeniSpi/([^']+)'", r"QCOM_GENI_SPI / '\1'", text)
-              body = re.sub(r"ROOT\s*/\s*'drivers/QcomGeniSpi'", 'QCOM_GENI_SPI', body)
-              if 'drivers/QcomGeniSpi' in body:
-                  sys.exit('leftover submodule reference in ' + s.name)
-              lines = body.splitlines(True)
-              start = 1 if lines and lines[0].startswith('#!') else 0
-              lines.insert(start, header)
-              s.write_text(''.join(lines))
-              print('rewrote', s.name)
-          PY
-      - name: mark board constants and helpers this variant compiles out
-        run: |
-          echo "[marker] board unused" >> "$GITHUB_WORKSPACE/package.log"
-          python3 - <<'PY' >> "$GITHUB_WORKSPACE/package.log" 2>&1
-          import pathlib, re
-          types = r'(?:static\s+)?(?:bool|int|void|uint32_t|uint64_t|int32_t|int64_t|size_t|IOReturn|const char \*)\s+\w+\s*\('
-          for cpp in sorted(pathlib.Path('device/package').glob('*.cpp')):
-              text = cpp.read_text()
-              before = text
-              text = re.sub(r'^constexpr ', '[[maybe_unused]] constexpr ', text, flags=re.M)
-              text = re.sub(r'^(' + types + r')', r'[[maybe_unused]] \1', text, flags=re.M)
-              text = re.sub(r'^(static const char \w+\[\])(.*)$', r'\1 __attribute__((unused))\2', text, flags=re.M)
-              if text != before:
-                  cpp.write_text(text)
-                  print(cpp.name, 'patched')
-          PY
+      - name: pre-package fixups
+        run: python3 ci-repo/ci/prepare-82b.py >> "$GITHUB_WORKSPACE/package.log" 2>&1
       - name: package
         working-directory: device
         env:

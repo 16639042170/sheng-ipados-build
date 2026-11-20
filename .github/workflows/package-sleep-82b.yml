@@ -148,25 +148,23 @@ jobs:
               if '--- /dev/null' not in text:
                   continue
               lines = text.splitlines(True)
-              out, changed, i = [], False, 0
-              while i < len(lines):
-                  line = lines[i]
+              out = []
+              for i, line in enumerate(lines):
                   out.append(line)
                   if line.startswith('diff --git ') and i + 1 < len(lines) and lines[i + 1].startswith('--- /dev/null'):
                       out.append('new file mode 100644\n')
-                      changed = True
-                  i += 1
-              if changed:
-                  patch.write_text(''.join(out))
-                  fixed.append(patch.as_posix())
+                      fixed.append(patch.as_posix())
+              patch.write_text(''.join(out))
           print('new-file headers added:', fixed)
           for patch in sorted(pathlib.Path('UniXNU/patches').rglob('*.patch')):
-              text = patch.read_text()
-              if '--- /dev/null' in text:
-                  miss = [i for i, l in enumerate(text.splitlines()) if l.startswith('diff --git ') and 'new file mode' not in text.splitlines()[i+1:i+2]]
-                  if miss:
-                      raise SystemExit('still headerless: ' + patch.as_posix())
-          print('all new-file hunks carry a header')
+              lines = patch.read_text().splitlines(True)
+              for i, line in enumerate(lines):
+                  if not line.startswith('--- /dev/null'):
+                      continue
+                  window = lines[max(0, i - 3):i]
+                  if not any(w.startswith('new file mode') for w in window):
+                      raise SystemExit('headerless new file in ' + patch.as_posix())
+          print('all new-file sections carry a header')
           PY
       - name: widen read_pages to the iOS target
         run: |

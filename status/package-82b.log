@@ -174,3 +174,38 @@ Submodule path 'SecurityPkg/DeviceSecurity/SpdmLib/libspdm': checked out 'f55cf6
 == tree /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree
 == ipsw: remote https://updates.cdn-apple.com/2026FallFCS/6074e110-d48d-40c2-b0e8-b611520941a3/iPad17,1,iPad17,2,iPad17,3,iPad17,4_27.0.1_24A446_Restore.ipsw
 == ipsw: extracting OS (043-68950-668.dmg.aea, 7872 MiB)
+== ipsw: fetching the AEA key of 043-68950-668.dmg.aea
+== ipsw: decrypting 043-68950-668.dmg.aea
+== ipsw: extracting Cryptex1,AppTrustCache (Firmware/043-69297-793.dmg.trustcache, 0 MiB)
++ /opt/homebrew/opt/python@3.15/bin/python3.15 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py --request /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/request.json
+From https://chromium.googlesource.com/external/gitlab.freedesktop.org/mesa/mesa
+ * branch            85fda3b36405bcaea8bffc64aa4f2651dc90770d -> FETCH_HEAD
+HEAD is now at 85fda3b freedreno/qrisc: Refactor section disassembly
+error: dev/null: No such file or directory
+"disk31" ejected.
+Traceback (most recent call last):
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 271, in <module>
+    main()
+    ~~~~^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 198, in main
+    plugin = build_plugin(request['target'])
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 79, in build_plugin
+    run('git', '-C', mesa, 'apply', ROOT / patch)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py", line 27, in run
+    subprocess.run([str(part) for part in command], check=True, **kwargs)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 692, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command ['git', '-C', '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/.cache/mesa-work', 'apply', '/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/patches/mesa/turnip-frame-diagnostics.patch'] returned non-zero exit status 1.
+unixnu: /opt/homebrew/opt/python@3.15/bin/python3.15 failed (1); full log: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/logs/runtime.log
+=== package exit 1 at Fri Nov 20 01:14:24 UTC 2026 ===
+Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk2s1s1   320Gi    12Gi    72Gi    15%    459k  755M    0%   /
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                    23413.
+Pages active:                                 147335.
+Pages inactive:                               157986.
+Pages speculative:                              3424.
+Pages throttled:                                   0.

@@ -60,10 +60,8 @@ def metal2vulkan_pin():
 
     82b847c records metal2vulkan 624bab39, but AdrenoMetal 8c7f950 (the GPU-sleep
     commit) carries a cumulative bridge snapshot whose base is 46e7cc96, and the
-    UniXNU main branch pins that same revision. 555b13d5 is an older line: a
-    translator built there compiles nineteen of the bridge's Rust modules only to
-    fail on the API it does not have yet, so move the recorded pin and its file
-    hashes together.
+    UniXNU main branch pins that same revision. 555b13d5 is an older line whose
+    translator lacks the API the bridge's Rust modules use.
     """
     marker('metal2vulkan pin')
     inputs = WS / 'UniXNU/scripts/data/gpu-metal-vulkan-inputs.json'
@@ -155,6 +153,21 @@ def bridge_manifest_probe():
         head = subprocess.check_output(['git', '-C', str(cache), 'rev-parse', 'HEAD'],
                                        text=True).strip()
         print('translator checkout HEAD:', head)
+
+
+def bridge_error_window():
+    """Make the bridge print its whole cargo failure, not just 6000 characters."""
+    marker('bridge error window')
+    script = WS / 'UniXNU/scripts/build-adreno-metal-bridge.py'
+    if not script.is_file():
+        sys.exit('build-adreno-metal-bridge.py missing at ' + str(script))
+    text = script.read_text()
+    old = 'log.read_text()[-6000:]'
+    if old not in text:
+        print('error window marker not found; left the script as it is')
+        return
+    script.write_text(text.replace(old, 'log.read_text()[-60000:]', 1))
+    print('bridge prints its last 60000 characters on failure')
 
 
 def read_pages_cfg():
@@ -264,14 +277,14 @@ def package_log_tail():
         return
     replacement = (
         'set +e\n'
-        'python3 "$ROOT/unixnu" release -D "$DEVICE" "$@"\n'
+        'python3 "$ROOT/unixnu" release -D "$DEVICE" "$@" 2>&1\n'
         'rc=$?\n'
         'set -e\n'
         'if [ "$rc" -ne 0 ]; then\n'
-        '  for f in "$ROOT"/out/*/*/logs/*.log; do\n'
+        '  for f in "$ROOT"/out/*/*/logs/*.log "$ROOT"/build/adreno-metal-bridge/build-*.log; do\n'
         '    [ -f "$f" ] || continue\n'
-        '    { echo "=== $(basename "$f")"; tail -n 300 "$f"; } >&2\n'
-        '    { echo "=== $(basename "$f") errors"; grep -n -A 10 -E "^error(:|\\[)" "$f" | head -n 600; } >&2\n'
+        '    echo "=== $(basename "$f") tail ==="\n'
+        '    tail -n 2000 "$f"\n'
         '  done\n'
         '  exit "$rc"\n'
         'fi\n'
@@ -301,6 +314,7 @@ if __name__ == '__main__':
     metal2vulkan_pin()
     bridge_patch_list()
     bridge_manifest_probe()
+    bridge_error_window()
     read_pages_cfg()
     geni_spi()
     conflicting_diagnostics()

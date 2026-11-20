@@ -6,46 +6,20 @@ from pathlib import Path
 
 def patch_layout(source):
     text = source.read_text()
-    old = """        used = self.used('__TEXT')
-        self.reserve('__TEXT', self.hole('__PRELINK_TEXT', used))
-        room = self.room('__PRELINK_TEXT', self.placements['__TEXT'])
-        self.mapped = {'__TEXT': min(self.segment('__TEXT')['size'], room // 0x1000 * 0x1000)}
-        if used > self.mapped['__TEXT']:
-            raise ValueError(f'No room for {used:#x} bytes in __PRELINK_TEXT: {self.mapped["__TEXT"]:#x} bytes of whole pages are free')
-"""
+    start = text.index("        used = self.used('__TEXT')\n")
+    stop = text.index("\n        const = self.roots['__DATA_CONST']", start)
+    text = text[:start] + """        self.mapped = {}
+        self.placements['__TEXT'] = self.roots['__TEXT']['va']
+""".replace('\n', '\n') + text[stop:]
+    old = "        self.reserve('__TEXT_EXEC', align(end_kept))\n"
     if old not in text:
         return False
-    replacement = """        used = self.used('__TEXT')
-        root = self.roots['__PRELINK_TEXT']
-        limit = root['va'] + root['size']
-        cursor = root['va']
-        for begin, end in sorted(self.occupied):
-            if begin >= limit:
-                break
-            if end <= cursor:
-                continue
-            cursor = max(cursor, end)
-        hole = align(cursor)
-        room = limit - hole
-        need = align(self.segment('__TEXT')['size'])
-        if used <= room:
-            self.reserve('__TEXT', hole)
-            self.mapped = {'__TEXT': min(need, room // 0x1000 * 0x1000)}
-        else:
-            data = self.roots['__DATA_CONST']
-            short = align(need - room)
-            if short <= 0 or hole + room != limit or data['va'] != limit:
-                raise ValueError(f'No room for {used:#x} bytes in __PRELINK_TEXT: largest free run {room:#x} at {hole:#x}')
-            root['size'] += short
-            root['filesize'] += short
-            data['va'] += short
-            data['fileoff'] += short
-            data['size'] -= short
-            data['filesize'] -= short
-            self.reserve('__TEXT', hole)
-            self.mapped = {'__TEXT': need}
+    new = """        text = align(end_kept)
+        self.reserve('__TEXT', text)
+        self.mapped = {'__TEXT': align(self.segment('__TEXT')['size'])}
+        self.reserve('__TEXT_EXEC', align(text + self.mapped['__TEXT']))
 """
-    text = text.replace(old, replacement, 1)
+    text = text.replace(old, new, 1)
     info_needle = """        info = self.roots['__PRELINK_INFO']
         info['va'] = self.allocate(info['size'])
 """

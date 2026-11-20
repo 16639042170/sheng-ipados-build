@@ -58,23 +58,23 @@ def patch_headers():
 def metal2vulkan_pin():
     """Pin the translator to the revision the GPU sleep bridge was written against.
 
-    82b847c records metal2vulkan 624bab39, but the bridge patches that come with
-    AdrenoMetal 8c7f950 (the GPU-sleep commit) are diffs against 555b13d5: patch
-    0004 carries `index a685b0dcb..`, which is that revision's
-    crates/metal2vulkan-air/src/canon/mod.rs blob, and the 0040 patch name says so
-    too. Applying them on 624bab39 fails at 0004, so move the recorded pin and
-    its file hashes together.
+    82b847c records metal2vulkan 624bab39, but AdrenoMetal 8c7f950 (the GPU-sleep
+    commit) carries a cumulative bridge snapshot whose base is 46e7cc96, and the
+    UniXNU main branch pins that same revision. 555b13d5 is an older line: a
+    translator built there compiles nineteen of the bridge's Rust modules only to
+    fail on the API it does not have yet, so move the recorded pin and its file
+    hashes together.
     """
     marker('metal2vulkan pin')
     inputs = WS / 'UniXNU/scripts/data/gpu-metal-vulkan-inputs.json'
     if not inputs.is_file():
         sys.exit('gpu-metal-vulkan-inputs.json missing at ' + str(inputs))
-    commit = '555b13d57e09bff70996a88cff64f1275256d5cf'
+    commit = '46e7cc96a284150bdf19b4a6a7890b0a8bc0ef71'
     hashes = {
-        'README.md': '7fdda13d0b2bb73779b97186acb6f36dca75506cefe41b03214685d25bb0ae10',
-        'Cargo.toml': '878c6ad5ce7efba58955114fe0c7a61a7372c9304b3ea244bc370cf158e5ad13',
+        'README.md': '6f89345d283d3fdc855ccfd6e53b88d736259b781a2160ada8a5272548223a1c',
+        'Cargo.toml': '1d538c7527113fa8d18d952e3457f40c1774cd445ffa1c66b703d23b4f740bd0',
         'crates/metal2vulkan/src/device/policy.rs':
-            '9672e8d38f1cc497164fc21e4a44148eae10a7acd02f63c6fd746460c9cc2bf6',
+            '5c1148142d127afd53291d31ee2cb71b39dc33ff46814b3a9440c82634d3b8e0',
     }
     data = json.loads(inputs.read_text())
     translator = data.get('translator', {})
@@ -118,7 +118,7 @@ def bridge_patch_list():
     print('bridge patches on disk:', len(patches), [p.name for p in patches[:4]])
     if not patches:
         sys.exit('AdrenoMetal/bridge/patches is empty at ' + str(directory))
-    base = '555b13d5'
+    base = '46e7cc96'
     snapshots = sorted(p for p in patches
                        if 'main-optimizations-on-development-' in p.name
                        and p.name.endswith('-development-' + base + '.patch'))

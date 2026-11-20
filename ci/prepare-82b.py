@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Pre-package fixups for the sheng iPadOS 27 P1 build.
+"""Pre-package fixups for the sheng iPadOS 27 P1 build (CPU + GPU sleep).
 
 Run after the three upstream checkouts and before scripts/package.sh. Every
 step is idempotent and prints what it changed, so repeated runs are cheap and
-the transcript lands in package.log (which the packaging step publishes while
-it runs).
+the transcript lands in package.log (which the packaging step publishes).
 """
 
 import os
@@ -20,13 +19,7 @@ def marker(name):
 
 
 def patch_headers():
-    """Give new-file hunks in the git-style patches their `new file mode`.
-
-    Without that line git apply strips the /dev/null prefix down to
-    `dev/null` and dies with `error: dev/null: No such file or directory`,
-    which is what turnip-frame-diagnostics.patch did on this revision. Patches
-    in the older unified format (no `diff --git` line) are left untouched.
-    """
+    """Give new-file hunks in the git-style patches their `new file mode`."""
     marker('patch headers')
     root = WS / 'UniXNU/patches'
     fixed = []
@@ -59,6 +52,34 @@ def patch_headers():
         sys.exit('headerless new file in ' + ', '.join(bad))
 
 
+def bridge_patch_list():
+    """Make the Metal bridge apply the patch set the AdrenoMetal pin ships.
+
+    The bridge script of 82b847c lists the recorded patches by name (0001..0030).
+    The AdrenoMetal revision that carries GPU sleep renumbered them
+    (0002/0004/.../0040+), so the recorded names no longer exist and git apply
+    aborts before it can build anything. Sorting the directory and applying what
+    is there keeps both revisions on their own list.
+    """
+    marker('bridge patch list')
+    script = WS / 'UniXNU/scripts/build-adreno-metal-bridge.py'
+    if not script.is_file():
+        sys.exit('build-adreno-metal-bridge.py missing at ' + str(script))
+    directory = WS / 'UniXNU/drivers/AdrenoMetal/bridge/patches'
+    patches = sorted(directory.glob('*.patch'))
+    print('bridge patches on disk:', len(patches), [p.name for p in patches[:4]])
+    if not patches:
+        sys.exit('AdrenoMetal/bridge/patches is empty at ' + str(directory))
+    text = script.read_text()
+    block = re.compile(r"PATCHES = \[ROOT / 'drivers/AdrenoMetal/bridge/patches' / name for name in \[.*?\]\]", re.S)
+    replacement = "PATCHES = sorted((ROOT / 'drivers/AdrenoMetal/bridge/patches').glob('*.patch'))"
+    if block.search(text):
+        script.write_text(block.sub(replacement, text, count=1))
+        print('rewrote PATCHES to the patches on disk')
+    else:
+        print('PATCHES block not found; left the script as it is')
+
+
 def read_pages_cfg():
     """Widen metal2vulkan's read_pages cfg to the iOS target."""
     marker('read_pages')
@@ -88,12 +109,7 @@ def read_pages_cfg():
 
 
 def geni_spi():
-    """Point the package tree at the kernel's QcomGeniSpi submodule.
-
-    The packaging tree is a git archive, so drivers/QcomGeniSpi is absent even
-    though TouchProbe includes GeniSpi.h and the build scripts compile GeniSpi.c
-    from it.
-    """
+    """Point the package tree at the kernel's QcomGeniSpi submodule."""
     marker('geni spi')
     package = WS / 'device/package'
     users = [p.name for p in package.glob('*.cpp')
@@ -128,11 +144,7 @@ def geni_spi():
 
 
 def board_unused():
-    """Mark board constants and helpers the iOS variant compiles out.
-
-    These board sources build with -Werror, but several file-scope constants and
-    helpers are only read from XNU_TARGET_OS_OSX blocks that an iOS build drops.
-    """
+    """Mark board constants and helpers the iOS variant compiles out."""
     marker('board unused')
     types = (r'(?:static\s+)?(?:bool|int|void|uint32_t|uint64_t|int32_t|int64_t|'
              r'size_t|IOReturn|const char \*)\s+\w+\s*\(')
@@ -149,6 +161,7 @@ def board_unused():
 
 if __name__ == '__main__':
     patch_headers()
+    bridge_patch_list()
     read_pages_cfg()
     geni_spi()
     board_unused()

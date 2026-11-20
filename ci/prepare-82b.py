@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the pinned prepare script, then make the runtime build print its real logs when it fails."""
+"""Run the pinned prepare script, then let the bridge build on iOS and dump its logs on failure."""
 import os
 import pathlib
 import urllib.request
@@ -29,7 +29,23 @@ TAIL = """if __name__ == '__main__':
         raise
 """
 marker = "if __name__ == '__main__':\n    main()\n"
-if marker not in text:
-    raise SystemExit('[wrapper] build-boot-runtime tail changed')
-runtime.write_text(text.replace(marker, TAIL))
-print('[wrapper] build-boot-runtime dumps the real logs into package.log on failure')
+if marker in text:
+    runtime.write_text(text.replace(marker, TAIL))
+    print('[wrapper] build-boot-runtime dumps the real logs into package.log on failure')
+
+bridge = WS / 'UniXNU/scripts/build-adreno-metal-bridge.py'
+script = bridge.read_text()
+OLD = """if git_tree(['add', '-A']) != states[-1]:
+    raise SystemExit('Translator patch result differs from its exact recorded source')"""
+NEW = """# iOS takes the same Darwin host-memory paths the translator keys on macOS.
+for rust in sorted(SOURCE.glob('crates/*/src/**/*.rs')):
+    was = rust.read_text()
+    now = was.replace('#[cfg(target_os = "macos")]',
+                      '#[cfg(any(target_os = "macos", target_os = "ios"))]')
+    if now != was:
+        rust.write_text(now)"""
+if OLD in script:
+    bridge.write_text(script.replace(OLD, NEW))
+    print('[wrapper] bridge builds the Darwin paths for iOS too')
+else:
+    print('[wrapper] bridge script already carries the iOS paths')

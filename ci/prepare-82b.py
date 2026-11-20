@@ -101,13 +101,13 @@ def metal2vulkan_pin():
 
 
 def bridge_patch_list():
-    """Make the Metal bridge apply the patch set the AdrenoMetal pin ships.
+    """Make the Metal bridge apply the snapshot its AdrenoMetal pin was written for.
 
-    The bridge script of 82b847c lists the recorded patches by name (0001..0030).
-    The AdrenoMetal revision that carries GPU sleep renumbered them
-    (0002/0004/.../0040+), so the recorded names no longer exist and git apply
-    aborts before it can build anything. Sorting the directory and applying what
-    is there keeps both revisions on their own list.
+    The AdrenoMetal revision that carries GPU sleep ships 0046..0063, each a
+    cumulative diff from the base commit its name ends with, plus small patches
+    0002..0041 that the snapshots already contain. Applying a snapshot on top of
+    the small ones fails (0004's hunks are inside 0046), so pick the one snapshot
+    whose base matches the pin and hand it to the bridge alone.
     """
     marker('bridge patch list')
     script = WS / 'UniXNU/scripts/build-adreno-metal-bridge.py'
@@ -118,12 +118,20 @@ def bridge_patch_list():
     print('bridge patches on disk:', len(patches), [p.name for p in patches[:4]])
     if not patches:
         sys.exit('AdrenoMetal/bridge/patches is empty at ' + str(directory))
+    base = '555b13d5'
+    snapshots = sorted(p for p in patches
+                       if 'main-optimizations-on-development-' in p.name
+                       and p.name.endswith('-development-' + base + '.patch'))
+    chosen = snapshots[-1:] if snapshots else patches
+    names = [p.name for p in chosen]
+    print('bridge patches chosen:', names)
     text = script.read_text()
     block = re.compile(r"PATCHES = \[ROOT / 'drivers/AdrenoMetal/bridge/patches' / name for name in \[.*?\]\]", re.S)
-    replacement = "PATCHES = sorted((ROOT / 'drivers/AdrenoMetal/bridge/patches').glob('*.patch'))"
+    replacement = ("PATCHES = [ROOT / 'drivers/AdrenoMetal/bridge/patches' / name for name in ["
+                   + ', '.join(repr(n) for n in names) + ']]')
     if block.search(text):
         script.write_text(block.sub(replacement, text, count=1))
-        print('rewrote PATCHES to the patches on disk')
+        print('rewrote PATCHES to the chosen snapshot')
     else:
         print('PATCHES block not found; left the script as it is')
 

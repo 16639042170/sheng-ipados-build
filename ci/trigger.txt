@@ -1,0 +1,1 @@
+trigger 2026-11-20T05:20Z: rebuild on 89fc542 (pin cache cleanup + logs/ tail)

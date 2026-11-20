@@ -1,10 +1,10 @@
 name: package-sleep-82b
-# P1: the device tree's own kernel revision (UniXNU 82b847c) with the ArmCpu sleep commit
-# cherry-picked on it (that commit installs arm64_platform_sleep_hook, which is what
-# platform-sleep=1 needs). The AdrenoMetal sleep commit is deliberately not taken: it moves
-# drivers/AdrenoMetal to a revision whose bridge patch numbering no longer matches the
-# 0001..0030 list in this kernel's build-adreno-metal-bridge.py, and GPU sleep is not part of
-# the CPU sleep proof. Then the board's own 25-patch series, authored against this revision.
+# P1: the device tree's own kernel revision (UniXNU 82b847c) with BOTH sleep commits
+# cherry-picked on it -- ArmCpu 90873392 (installs arm64_platform_sleep_hook) and AdrenoMetal
+# 099c72fd (GPU-side sleep). The AdrenoMetal pin those commits bring renumbers its bridge
+# patches (0002/0004/.../0040+), so ci/prepare-82b.py rewrites the bridge script's PATCHES
+# list to the patches actually on disk instead of the recorded 0001..0030 names.
+# Then the board's own 25-patch series, authored against this revision.
 on:
   push:
     paths:
@@ -57,7 +57,7 @@ jobs:
         run: |
           log="$GITHUB_WORKSPACE/package.log"
           { echo "=== markers $(date -u) ==="; echo "[marker] checkouts"; } > "$log"
-      - name: cherry-pick the ArmCpu sleep commit
+      - name: cherry-pick the two sleep commits
         working-directory: UniXNU
         run: |
           echo "[marker] cherry-pick $(date -u)" >> "$GITHUB_WORKSPACE/package.log"
@@ -65,26 +65,27 @@ jobs:
           git config user.email ci@local
           git config user.name ci
           git fetch --filter=blob:none origin main:refs/remotes/origin/main
-          c=90873392b74445c75a15d48769bd570322b8136a
-          if [ "$(git rev-list --parents -n1 $c | wc -w)" -gt 2 ]; then
-            git cherry-pick -m 1 "$c" || true
-          else
-            git cherry-pick "$c" || true
-          fi
-          if [ -f .git/CHERRY_PICK_HEAD ]; then
-            for sub in $(git diff --name-only --diff-filter=U); do
-              case "$sub" in
-                components.toml) git checkout --ours -- "$sub"; git add "$sub" ;;
-                *.py) git add "$sub" ;;
-                *) pointer=$(git ls-tree "$c" -- "$sub" | awk '{print $3}')
-                   git -C "$sub" fetch --depth 1 origin "$pointer"
-                   git -C "$sub" checkout "$pointer"
-                   git add "$sub" ;;
-              esac
-            done
-            git -c core.editor=true cherry-pick --continue
-          fi
-          git log --oneline -1 >> "$GITHUB_WORKSPACE/package.log" 2>&1
+          for c in 90873392b74445c75a15d48769bd570322b8136a 099c72fd; do
+            if [ "$(git rev-list --parents -n1 $c | wc -w)" -gt 2 ]; then
+              git cherry-pick -m 1 "$c" || true
+            else
+              git cherry-pick "$c" || true
+            fi
+            if [ -f .git/CHERRY_PICK_HEAD ]; then
+              for sub in $(git diff --name-only --diff-filter=U); do
+                case "$sub" in
+                  components.toml) git checkout --theirs -- "$sub"; git add "$sub" ;;
+                  *.py) git add "$sub" ;;
+                  *) pointer=$(git ls-tree "$c" -- "$sub" | awk '{print $3}')
+                     git -C "$sub" fetch --depth 1 origin "$pointer"
+                     git -C "$sub" checkout "$pointer"
+                     git add "$sub" ;;
+                esac
+              done
+              git -c core.editor=true cherry-pick --continue
+            fi
+            git log --oneline -1 >> "$GITHUB_WORKSPACE/package.log" 2>&1
+          done
           git ls-tree HEAD drivers/ArmCpu >> "$GITHUB_WORKSPACE/package.log"
           git ls-tree HEAD drivers/AdrenoMetal >> "$GITHUB_WORKSPACE/package.log"
       - name: tools

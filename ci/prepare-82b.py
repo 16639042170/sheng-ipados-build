@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the pinned prepare script, then fix the iOS bridge, the failure logs and the tree profiles link."""
+"""Run the pinned prepare script, then fix the iOS bridge, the logs and the build tree."""
 import os
 import pathlib
 import urllib.request
@@ -62,3 +62,17 @@ if OLD_TREE in tree_text and "tree / 'profiles'" not in tree_text:
     print('[wrapper] the build tree carries profiles/')
 else:
     print('[wrapper] tree script already links profiles')
+
+fileset = WS / 'UniXNU/scripts/build-fileset-release-reference.py'
+fileset_text = fileset.read_text()
+OLD_LINK = """    if result.returncode:
+        raise SystemExit(result.returncode)"""
+NEW_LINK = """    if result.returncode:
+        tail = (output / f'{mode}-build.log').read_text(errors='replace').splitlines()[-300:]
+        print('\\n'.join(tail), flush=True)
+        raise SystemExit(result.returncode)"""
+if OLD_LINK in fileset_text:
+    fileset.write_text(fileset_text.replace(OLD_LINK, NEW_LINK))
+    print('[wrapper] the fileset link failure prints its LTO log')
+else:
+    print('[wrapper] fileset link already prints its log')

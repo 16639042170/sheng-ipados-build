@@ -57,7 +57,7 @@ OLD_TREE = "    (tree / 'scripts').mkdir(exist_ok=True)"
 NEW_TREE = """    if (ctx.root / 'profiles').is_dir():
         _link(ctx.root / 'profiles', tree / 'profiles')
     (tree / 'scripts').mkdir(exist_ok=True)"""
-if OLD_TREE in tree_text and '(ctx.root / ' not in tree_text:
+if OLD_TREE in tree_text and "tree / 'profiles'" not in tree_text:
     tree_script.write_text(tree_text.replace(OLD_TREE, NEW_TREE))
     print('[wrapper] the build tree carries profiles/')
 else:

@@ -587,3 +587,35 @@ build-xnu-4k-baseline.sh: line 829: make -C .cache/xnu-work "${XNU_BUILD_TARGET:
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-gop-legacy-display-27.py
 == kernel: archive-20-build-fileset-release-reference
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-fileset-release-reference.py --tree . --lto
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      _kernel_bootstrap in justlto.o
+      ...
+ld: symbol(s) not found for architecture arm64e.kernel
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+make[3]: *** [/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/build/xnu/fileset-reference/lto-2f9b803462ce5558/lto-obj/RELEASE_ARM64_BCM2837//mach.release.bcm2837.unstripped.noctf] Error 1
+make[2]: *** [build_all] Error 2
+make[1]: *** [build_all_bootstrap_RELEASE^ARM64^BCM2837] Error 2
+make: *** [build] Error 2
+unixnu: python3 failed (2); full log: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/logs/archive-20-build-fileset-release-reference.log
+=== package exit 1 at Fri Nov 20 16:47:27 UTC 2026 ===

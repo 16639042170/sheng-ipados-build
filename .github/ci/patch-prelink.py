@@ -15,22 +15,37 @@ def patch_layout(source):
 """
     if old not in text:
         return False
-    text = text.replace(old, """        self.mapped = {}
-        self.placements['__TEXT'] = self.roots['__TEXT']['va']
-""", 1)
-    end = '        self.size = self.cursor\n'
-    if end not in text:
-        return False
-    addition = """        self.cursor = align(max(self.cursor, max(root['va'] + root['size'] - self.cache.base for root in self.roots.values() if root['size'])))
-        size = align(self.segment('__TEXT')['size'])
-        root = dict(name='__NATIVE_TEXT', va=self.cache.base + self.cursor,
-                    size=size, fileoff=self.cursor, filesize=size)
-        self.roots['__NATIVE_TEXT'] = root
-        self.reserve('__TEXT', root['va'])
-        self.mapped = {'__TEXT': size}
-        self.cursor = align(self.cursor + size)
+    replacement = """        used = self.used('__TEXT')
+        root = self.roots['__PRELINK_TEXT']
+        limit = root['va'] + root['size']
+        cursor = root['va']
+        for begin, end in sorted(self.occupied):
+            if begin >= limit:
+                break
+            if end <= cursor:
+                continue
+            cursor = max(cursor, end)
+        hole = align(cursor)
+        room = limit - hole
+        need = align(self.segment('__TEXT')['size'])
+        if used <= room:
+            self.reserve('__TEXT', hole)
+            self.mapped = {'__TEXT': min(need, room // 0x1000 * 0x1000)}
+        else:
+            data = self.roots['__DATA_CONST']
+            short = align(need - room)
+            if short <= 0 or hole + room != limit or data['va'] != limit:
+                raise ValueError(f'No room for {used:#x} bytes in __PRELINK_TEXT: largest free run {room:#x} at {hole:#x}')
+            root['size'] += short
+            root['filesize'] += short
+            data['va'] += short
+            data['fileoff'] += short
+            data['size'] -= short
+            data['filesize'] -= short
+            self.reserve('__TEXT', hole)
+            self.mapped = {'__TEXT': need}
 """
-    text = text.replace(end, addition + end, 1)
+    text = text.replace(old, replacement, 1)
     info_needle = """        info = self.roots['__PRELINK_INFO']
         info['va'] = self.allocate(info['size'])
 """

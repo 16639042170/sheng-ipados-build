@@ -10,6 +10,8 @@ import json
 import os
 import pathlib
 import re
+import shutil
+import subprocess
 import sys
 
 WS = pathlib.Path(os.environ.get('GITHUB_WORKSPACE', '.'))
@@ -79,12 +81,23 @@ def metal2vulkan_pin():
     print('pin before:', translator.get('commit'))
     if translator.get('commit') == commit and translator.get('files') == hashes:
         print('already pinned')
-        return
-    translator['commit'] = commit
-    translator['files'] = hashes
-    data['translator'] = translator
-    inputs.write_text(json.dumps(data, indent=2) + '\n')
-    print('pin after:', commit)
+    else:
+        translator['commit'] = commit
+        translator['files'] = hashes
+        data['translator'] = translator
+        inputs.write_text(json.dumps(data, indent=2) + '\n')
+        print('pin after:', commit)
+    # The deps stage may already have fetched the old pin into the reference
+    # cache; build-boot-runtime's checkout() refuses a cache whose HEAD differs
+    # from the pin instead of fetching the new one, so drop it here.
+    cache = WS / 'UniXNU/.cache/gpu-reference/metal2vulkan'
+    if cache.is_dir():
+        head = subprocess.check_output(['git', '-C', str(cache), 'rev-parse', 'HEAD'],
+                                       text=True).strip()
+        print('cached metal2vulkan HEAD:', head)
+        if head != commit:
+            shutil.rmtree(cache)
+            print('removed the stale metal2vulkan checkout')
 
 
 def bridge_patch_list():
@@ -203,6 +216,40 @@ def conflicting_diagnostics():
     print('dropped diagnostic patches:', removed)
 
 
+def package_log_tail():
+    """Make a failed release print the runtime log it keeps in logs/.
+
+    package.sh execs unixnu and lets its exit status through; unixnu writes the
+    real error to out/.../logs/runtime.log, so package.log only shows the
+    failed command. Replacing the exec with a run-and-dump keeps the status and
+    puts the tail in the published log.
+    """
+    marker('package log tail')
+    script = WS / 'device/scripts/package.sh'
+    if not script.is_file():
+        sys.exit('package.sh missing at ' + str(script))
+    text = script.read_text()
+    exec_line = 'exec python3 "$ROOT/unixnu" release -D "$DEVICE" "$@"\n'
+    if exec_line not in text:
+        print('exec line not found; left package.sh as it is')
+        return
+    replacement = (
+        'set +e\n'
+        'python3 "$ROOT/unixnu" release -D "$DEVICE" "$@"\n'
+        'rc=$?\n'
+        'set -e\n'
+        'if [ "$rc" -ne 0 ]; then\n'
+        '  for f in "$ROOT"/out/*/*/logs/*.log; do\n'
+        '    [ -f "$f" ] || continue\n'
+        '    { echo "=== $(basename "$f")"; tail -n 300 "$f"; } >&2\n'
+        '  done\n'
+        '  exit "$rc"\n'
+        'fi\n'
+    )
+    script.write_text(text.replace(exec_line, replacement, 1))
+    print('package.sh now dumps logs/ on failure')
+
+
 def board_unused():
     """Mark board constants and helpers the iOS variant compiles out."""
     marker('board unused')
@@ -226,5 +273,6 @@ if __name__ == '__main__':
     read_pages_cfg()
     geni_spi()
     conflicting_diagnostics()
+    package_log_tail()
     board_unused()
     marker('fixups done')

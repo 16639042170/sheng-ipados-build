@@ -391,3 +391,7 @@ Submodule path 'SecurityPkg/DeviceSecurity/SpdmLib/libspdm': checked out 'f55cf6
 == tree /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree
 == ipsw: remote https://updates.cdn-apple.com/2026FallFCS/6074e110-d48d-40c2-b0e8-b611520941a3/iPad17,1,iPad17,2,iPad17,3,iPad17,4_27.0.1_24A446_Restore.ipsw
 == ipsw: extracting OS (043-68950-668.dmg.aea, 7872 MiB)
+== ipsw: fetching the AEA key of 043-68950-668.dmg.aea
+== ipsw: decrypting 043-68950-668.dmg.aea
+== ipsw: extracting Cryptex1,AppTrustCache (Firmware/043-69297-793.dmg.trustcache, 0 MiB)
++ /opt/homebrew/opt/python@3.15/bin/python3.15 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-boot-runtime.py --request /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/runtime/request.json

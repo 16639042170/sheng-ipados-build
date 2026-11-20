@@ -1,11 +1,11 @@
-=== markers Fri Nov 20 01:49:38 UTC 2026 ===
+=== markers Fri Nov 20 02:00:17 UTC 2026 ===
 [marker] checkouts
-[marker] cherry-pick Fri Nov 20 01:49:38 UTC 2026
-fa528b9 feat(power): select ArmCpu sleep and resume support (#299)
-7ce4571 build(shader-cache): Select the merged registration and sleep fixes
+[marker] cherry-pick Fri Nov 20 02:00:17 UTC 2026
+5af1c11 feat(power): select ArmCpu sleep and resume support (#299)
+2accd42 build(shader-cache): Select the merged registration and sleep fixes
 160000 commit 5f3702697ed80fd2e98594de1af7e32b4b77b08b	drivers/ArmCpu
 160000 commit 8c7f9502de593c04a1003690f4a9441fe88551e8	drivers/AdrenoMetal
-[marker] tools Fri Nov 20 01:49:43 UTC 2026
+[marker] tools Fri Nov 20 02:00:20 UTC 2026
 [34m==>[0m [1mTapping blacktop/tap[0m
 Cloning into '/opt/homebrew/Library/Taps/blacktop/homebrew-tap'...
 Tapped 14 casks and 29 formulae (58 files, 1.8MB).
@@ -20,22 +20,22 @@ To reinstall 1.13.2, run:
 [33mWarning:[0m pkgconf 3.0.10 is already installed and up-to-date.
 To reinstall 3.0.10, run:
   brew reinstall pkgconf
-[33mWarning:[0m rustup 1.29.3 is already installed and up-to-date.
-To reinstall 1.29.3, run:
+[33mWarning:[0m rustup 1.29.2 is already installed and up-to-date.
+To reinstall 1.29.2, run:
   brew reinstall rustup
 [32m==>[0m [1mDownloading bottle manifests[0m
 ✔︎ Bottle Manifest dtc (1.8.1)
-✔︎ Bottle Manifest llvm (23.1.5_1)
-✔︎ Bottle Manifest lld (23.1.5)
-✔︎ Bottle Manifest mtools (4.0.50)
+✔︎ Bottle Manifest llvm (23.1.4)
 ✔︎ Bottle Manifest glslang (16.6.0)
 ✔︎ Bottle Manifest shaderc (2026.4)
 ✔︎ Bottle Manifest spirv-tools (1.4.363.0)
 ✔︎ Bottle Manifest bison (3.8.2)
+✔︎ Bottle Manifest lld (23.1.4)
+✔︎ Bottle Manifest mtools (4.0.50)
 [34m==>[0m [1mWould install 9 formulae:[0m
 dtc                1.8.1
-llvm               23.1.5_1
-lld                23.1.5
+llvm               23.1.4
+lld                23.1.4
 mtools             4.0.50
 glslang            16.6.0
 shaderc            2026.4
@@ -43,38 +43,37 @@ spirv-tools        1.4.363.0
 bison              3.8.2
 blacktop/tap/ipsw  3.1.749
 [34m==>[0m [1mWould install 1 dependency for llvm:[0m
-z3 5.4.1
+z3 5.3.3
 [34m==>[0m [1mWould install 2 dependencies for lld:[0m
-z3    5.4.1
-llvm  23.1.5_1
+z3    5.3.3
+llvm  23.1.4
 [34m==>[0m [1mWould install 2 dependencies for glslang:[0m
 spirv-headers  1.4.363.0
 spirv-tools    1.4.363.0
 [32m==>[0m [1mFetching downloads for: [32mdtc[39m, [32mllvm[39m, [32mlld[39m, [32mmtools[39m, [32mglslang[39m, [32mshaderc[39m, [32mspirv-tools[39m, [32mbison[39m and [32mipsw[39m[0m
-✔︎ Bottle dtc (1.8.1)
-✔︎ Bottle Manifest z3 (5.4.1)
-✔︎ Bottle lld (23.1.5)
+✔︎ Bottle lld (23.1.4)
 ✔︎ Bottle mtools (4.0.50)
+✔︎ Bottle Manifest z3 (5.3.3)
 ✔︎ Bottle Manifest spirv-headers (1.4.363.0)
+✔︎ Bottle dtc (1.8.1)
 ✔︎ Bottle glslang (16.6.0)
 ✔︎ Bottle shaderc (2026.4)
 ✔︎ Formula ipsw (3.1.749)
+✔︎ Bottle bison (3.8.2)
 ✔︎ Bottle spirv-headers (1.4.363.0)
 ✔︎ Bottle spirv-tools (1.4.363.0)
-✔︎ Bottle spirv-tools (1.4.363.0)
-✔︎ Bottle bison (3.8.2)
-✔︎ Bottle z3 (5.4.1)
-✔︎ Bottle llvm (23.1.5_1)
+✔︎ Bottle z3 (5.3.3)
+✔︎ Bottle llvm (23.1.4)
 [34m==>[0m [1mPouring dtc--1.8.1.arm64_tahoe.bottle.tar.gz[0m
 🍺  /opt/homebrew/Cellar/dtc/1.8.1: 19 files, 588.2KB
-[32m==>[0m [1mInstalling llvm dependency: [32mz3[39m (5.4.1)[0m
-[34m==>[0m [1mPouring z3--5.4.1.arm64_tahoe.bottle.tar.gz[0m
-🍺  /opt/homebrew/Cellar/z3/5.4.1: 156 files, 45.5MB
+[32m==>[0m [1mInstalling llvm dependency: [32mz3[39m (5.3.3)[0m
+[34m==>[0m [1mPouring z3--5.3.3.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/z3/5.3.3: 143 files, 44.9MB
 [32m==>[0m [1mInstalling [32mllvm[39m[0m
-[34m==>[0m [1mPouring llvm--23.1.5_1.arm64_tahoe.bottle.tar.gz[0m
-🍺  /opt/homebrew/Cellar/llvm/23.1.5_1: 9,338 files, 1.9GB
-[34m==>[0m [1mPouring lld--23.1.5.arm64_tahoe.bottle.tar.gz[0m
-🍺  /opt/homebrew/Cellar/lld/23.1.5: 44 files, 6MB
+[34m==>[0m [1mPouring llvm--23.1.4.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/llvm/23.1.4: 9,338 files, 1.9GB
+[34m==>[0m [1mPouring lld--23.1.4.arm64_tahoe.bottle.tar.gz[0m
+🍺  /opt/homebrew/Cellar/lld/23.1.4: 44 files, 6MB
 [34m==>[0m [1mPouring mtools--4.0.50.arm64_tahoe.bottle.tar.gz[0m
 🍺  /opt/homebrew/Cellar/mtools/4.0.50: 69 files, 603.2KB
 [32m==>[0m [1mInstalling dependencies for glslang:[0m [32mspirv-headers[39m and [32mspirv-tools[39m[0m
@@ -92,7 +91,7 @@ spirv-tools    1.4.363.0
 [34m==>[0m [1mPouring bison--3.8.2.arm64_tahoe.bottle.tar.gz[0m
 🍺  /opt/homebrew/Cellar/bison/3.8.2: 100 files, 3.9MB
 [34m==>[0m [1mInstalling ipsw from blacktop/tap[0m
-🍺  /opt/homebrew/Cellar/ipsw/3.1.749: 245 files, 90.5MB, built in 10 seconds
+🍺  /opt/homebrew/Cellar/ipsw/3.1.749: 245 files, 90.5MB, built in 8 seconds
 [32m==>[0m [1mCaveats[0m
 Bash completion has been installed to:
   /opt/homebrew/etc/bash_completion.d
@@ -174,4 +173,59 @@ freebsd cloned HEAD bb03631fe3b7a8bfa8071e8063f554528d4e4618 locked 95719d8a895b
 verified locked Linux/mac80211/cfg80211, FreeBSD and supplicant sources: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/device/drivers/Ath12kWifi/out/source-identity.json
 [marker] patch headers
 new-file headers added: ['UniXNU/patches/mesa/turnip-frame-diagnostics.patch']
-headerless new file in UniXNU/patches/xnu/zzz-boot-progress.patch
+[marker] read_pages
+copied.rs candidates: []
+widenings: 0
+[marker] geni spi
+GeniSpi.h included by: ['TouchProbe.cpp']
+build scripts referencing the submodule: ['build-sheng-source-drivers.py']
+copied headers: ['GeniSpi.h']
+rewrote build-sheng-source-drivers.py
+[marker] board unused
+AcceleratorABIProbe.cpp patched
+AdspProbe.cpp patched
+AirLibraryDiagnostic.cpp patched
+AirNirDiagnostic.cpp patched
+AppleARMBacklight.cpp patched
+AudioProbe.cpp patched
+BluetoothProbe.cpp patched
+BoardClock.cpp patched
+BootLatencyStoreTests.cpp patched
+ButtonProbe.cpp patched
+CpuFreqProbe.cpp patched
+DisplayEnvironmentDiagnostic.cpp patched
+DisplayTimingProbe.cpp patched
+FramebufferGeometryDiagnostic.cpp patched
+FramebufferPowerDiagnostic.cpp patched
+FramebufferProtocolDiagnostic.cpp patched
+GpuMemoryPool.cpp patched
+GpuPowerProbe.cpp patched
+HidInputProbe.cpp patched
+KeyStoreProbe.cpp patched
+KeyboardCover.cpp patched
+KeyboardProbe.cpp patched
+LegacyDisplayProbe.cpp patched
+MetalRuntimeDiagnostic.cpp patched
+MobileDisplayProviderProbe.cpp patched
+OfflineGPUTransportDiagnostic.cpp patched
+OriginalGPUClientABIProbe.cpp patched
+OriginalGPUProviderProbe.cpp patched
+ShengAudioService.cpp patched
+ShengBattery.cpp patched
+ShengEthernet.cpp patched
+ShengPlatformPower.cpp patched
+ShengSleep.cpp patched
+SoftwareAesProbe.cpp patched
+SourceRootBinding.cpp patched
+SourceRootPolicies.cpp patched
+SourceStorage.cpp patched
+ThermalLevel.cpp patched
+ThermalProbe.cpp patched
+TouchProbe.cpp patched
+UsbProbe.cpp patched
+VideoProbe.cpp patched
+WifiNet.cpp patched
+WifiProbe.cpp patched
+[marker] fixups done
+=== package start Fri Nov 20 02:03:23 UTC 2026 ===
+/Users/runner/work/sheng-ipados-build/sheng-ipados-build/device

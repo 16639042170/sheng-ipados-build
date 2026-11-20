@@ -136,6 +136,27 @@ def bridge_patch_list():
         print('PATCHES block not found; left the script as it is')
 
 
+def bridge_manifest_probe():
+    """Print the bridge crate's manifest and the translator revision it sees."""
+    marker('bridge manifest probe')
+    root = WS / 'UniXNU/drivers/AdrenoMetal'
+    manifests = sorted(root.rglob('Cargo.toml'))
+    print('Cargo.toml under AdrenoMetal:', [str(m.relative_to(root)) for m in manifests])
+    for manifest in manifests:
+        body = manifest.read_text(errors='ignore')
+        if 'metal2vulkan' not in body:
+            continue
+        print('---', manifest.relative_to(root))
+        for line in body.splitlines():
+            if 'metal2vulkan' in line or line.startswith('['):
+                print('   ', line)
+    cache = WS / 'UniXNU/.cache/gpu-reference/metal2vulkan'
+    if cache.is_dir():
+        head = subprocess.check_output(['git', '-C', str(cache), 'rev-parse', 'HEAD'],
+                                       text=True).strip()
+        print('translator checkout HEAD:', head)
+
+
 def read_pages_cfg():
     """Widen metal2vulkan's read_pages cfg to the iOS target."""
     marker('read_pages')
@@ -250,6 +271,7 @@ def package_log_tail():
         '  for f in "$ROOT"/out/*/*/logs/*.log; do\n'
         '    [ -f "$f" ] || continue\n'
         '    { echo "=== $(basename "$f")"; tail -n 300 "$f"; } >&2\n'
+        '    { echo "=== $(basename "$f") errors"; grep -n -A 10 -E "^error(:|\\[)" "$f" | head -n 600; } >&2\n'
         '  done\n'
         '  exit "$rc"\n'
         'fi\n'
@@ -278,6 +300,7 @@ if __name__ == '__main__':
     patch_headers()
     metal2vulkan_pin()
     bridge_patch_list()
+    bridge_manifest_probe()
     read_pages_cfg()
     geni_spi()
     conflicting_diagnostics()

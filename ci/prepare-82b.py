@@ -77,20 +77,24 @@ if OLD_LINK in fileset_text:
 else:
     print('[wrapper] fileset link already prints its log')
 
-# The reference kernel stubs every hook the bring-up leaves undefined: arm64e treats an
-# undefined weak_import as a hard error, and the comparison kernel never runs.
-OLD_STUB = r'^\s+"(_(?:native_[a-z0-9_]+|boot_log_rounds))"'
+OLD_STUB = r'^  "(_(?:native_[a-z0-9_]+|boot_log_rounds))"'
 NEW_STUB = r'^  "(_[A-Za-z0-9_]+)"'
 if OLD_STUB in fileset_text:
     fileset_text = fileset_text.replace(OLD_STUB, NEW_STUB)
     print('[wrapper] the reference kernel stubs every undefined symbol')
 else:
     print('[wrapper] reference stubs already cover every undefined symbol')
-OLD_STUB_WRITE = """    if stub_names:
-        (output / 'native-stubs.c').write_text"""
-NEW_STUB_WRITE = """    print('reference stubs', len(stub_names), stub_names[:8], flush=True)
-    if stub_names:
-        (output / 'native-stubs.c').write_text"""
-if OLD_STUB_WRITE in fileset_text:
-    fileset_text = fileset_text.replace(OLD_STUB_WRITE, NEW_STUB_WRITE)
 fileset.write_text(fileset_text)
+
+# The bring-up leaves weak_import hooks the comparison kernels never resolve. arm64e rejects
+# an undefined weak symbol outright, so the kernel link has to keep them dynamic instead.
+baseline = WS / 'UniXNU/scripts/build-xnu-4k-baseline.sh'
+baseline_text = baseline.read_text()
+OLD_BASE = 'EXTRA_MAKE_ARGS+=("LD_KERNEL_ARCHIVES=$KERNEL_EXTRA_ARCHIVES")'
+NEW_BASE = ('KERNEL_EXTRA_ARCHIVES="$KERNEL_EXTRA_ARCHIVES -Wl,-undefined,dynamic_lookup"\n'
+            + OLD_BASE)
+if OLD_BASE in baseline_text and 'dynamic_lookup' not in baseline_text:
+    baseline.write_text(baseline_text.replace(OLD_BASE, NEW_BASE))
+    print('[wrapper] the baseline kernel keeps its unresolved hooks dynamic')
+else:
+    print('[wrapper] baseline link already allows dynamic hooks')

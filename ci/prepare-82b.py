@@ -84,10 +84,19 @@ if OLD_STUB in fileset_text:
     print('[wrapper] the reference kernel stubs every undefined symbol')
 else:
     print('[wrapper] reference stubs already cover every undefined symbol')
+
+# The comparison kernel never runs: let the linker keep the bring-up weak_import hooks unresolved
+# instead of failing the LTO link on them.
+OLD_LDFLAGS = "-Wl,-mllvm,-inline-threshold=100'"
+NEW_LDFLAGS = "-Wl,-mllvm,-inline-threshold=100 -Wl,-undefined,dynamic_lookup'"
+if OLD_LDFLAGS in fileset_text and 'dynamic_lookup' not in fileset_text:
+    fileset_text = fileset_text.replace(OLD_LDFLAGS, NEW_LDFLAGS)
+    print('[wrapper] the reference kernel link keeps undefined hooks dynamic')
+else:
+    print('[wrapper] reference link already keeps undefined hooks dynamic')
 fileset.write_text(fileset_text)
 
-# The bring-up leaves weak_import hooks the comparison kernels never resolve. arm64e rejects
-# an undefined weak symbol outright, so the kernel link has to keep them dynamic instead.
+# The bring-up leaves weak_import hooks the baseline kernel never resolves.
 baseline = WS / 'UniXNU/scripts/build-xnu-4k-baseline.sh'
 baseline_text = baseline.read_text()
 OLD_BASE = 'EXTRA_MAKE_ARGS+=("LD_KERNEL_ARCHIVES=$KERNEL_EXTRA_ARCHIVES")'

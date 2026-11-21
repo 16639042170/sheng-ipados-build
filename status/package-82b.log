@@ -590,3 +590,35 @@ build-xnu-4k-baseline.sh: line 830: make -C .cache/xnu-work "${XNU_BUILD_TARGET:
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-gop-legacy-display-27.py
 == kernel: archive-20-build-fileset-release-reference
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-fileset-release-reference.py --tree .
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      _kernel_bootstrap in startup.o
+      ...
+ld: symbol(s) not found for architecture arm64e.kernel
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+make[3]: *** [/Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/build/xnu/fileset-reference/snapshot-0d0271a3ab8fa860/snapshot-obj/RELEASE_ARM64_BCM2837//mach.release.bcm2837.unstripped.noctf] Error 1
+make[2]: *** [build_all] Error 2
+make[1]: *** [build_all_bootstrap_RELEASE^ARM64^BCM2837] Error 2
+make: *** [build] Error 2
+unixnu: python3 failed (2); full log: /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/logs/archive-20-build-fileset-release-reference.log
+=== package exit 1 at Sat Nov 21 16:03:16 UTC 2026 ===

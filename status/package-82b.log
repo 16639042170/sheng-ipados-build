@@ -581,3 +581,11 @@ build-xnu-4k-baseline.sh: line 830: make -C .cache/xnu-work "${XNU_BUILD_TARGET:
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/prepare-sheng-gmu-votes.py
 == kernel: archive-16-build-adreno740-kits
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno740-kits.py
+== kernel: archive-17-build-adreno740-accelerator
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno740-accelerator.py
+== kernel: component-AppleKeyStoreState
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-arm-driver.py AppleKeyStoreState
+== kernel: archive-19-build-gop-legacy-display-27
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-gop-legacy-display-27.py
+== kernel: archive-20-build-fileset-release-reference
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-fileset-release-reference.py --tree . --lto

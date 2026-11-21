@@ -85,18 +85,19 @@ if OLD_STUB in fileset_text:
 else:
     print('[wrapper] reference stubs already cover every undefined symbol')
 
-# The comparison kernel never runs: let the linker keep the bring-up weak_import hooks unresolved
-# instead of failing the LTO link on them.
-OLD_LDFLAGS = "-Wl,-mllvm,-inline-threshold=100'"
-NEW_LDFLAGS = "-Wl,-mllvm,-inline-threshold=100 -Wl,-undefined,dynamic_lookup'"
-if OLD_LDFLAGS in fileset_text and 'dynamic_lookup' not in fileset_text:
-    fileset_text = fileset_text.replace(OLD_LDFLAGS, NEW_LDFLAGS)
-    print('[wrapper] the reference kernel link keeps undefined hooks dynamic')
+# LTO merges the kernel into justlto.o, which references _kernel_bootstrap that the
+# arm64e comparison link cannot resolve. Build this private reference without LTO.
+board = WS / 'device/board.toml'
+board_text = board.read_text()
+REF = '"build-fileset-release-reference.py --tree . --lto"'
+NO_LTO = '"build-fileset-release-reference.py --tree ."'
+if REF in board_text:
+    board.write_text(board_text.replace(REF, NO_LTO, 1))
+    print('[wrapper] the reference kernel is built without LTO')
 else:
-    print('[wrapper] reference link already keeps undefined hooks dynamic')
+    print('[wrapper] board already builds the reference kernel without LTO')
 fileset.write_text(fileset_text)
 
-# The bring-up leaves weak_import hooks the baseline kernel never resolves.
 baseline = WS / 'UniXNU/scripts/build-xnu-4k-baseline.sh'
 baseline_text = baseline.read_text()
 OLD_BASE = 'EXTRA_MAKE_ARGS+=("LD_KERNEL_ARCHIVES=$KERNEL_EXTRA_ARCHIVES")'

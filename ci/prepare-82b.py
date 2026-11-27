@@ -77,13 +77,18 @@ if OLD_LINK in fileset_text:
 else:
     print('[wrapper] fileset link already prints its log')
 
-OLD_STUB = r'^  "(_(?:native_[a-z0-9_]+|boot_log_rounds))"'
-NEW_STUB = r'^  "(_[A-Za-z0-9_]+)"'
-if OLD_STUB in fileset_text:
-    fileset_text = fileset_text.replace(OLD_STUB, NEW_STUB)
-    print('[wrapper] the reference kernel stubs every undefined symbol')
+# The pinned fileset script only knew ld's old undefined-symbol format and only
+# accepted native_*/boot_log_rounds, so the non-LTO summary block
+# (`      _kernel_bootstrap in startup.o`) stubbed nothing at all.
+STUB_OLD = '    build_log = (output / f\'{mode}-build.log\').read_text()\n    stub_names = sorted(set(re.findall(r\'^\\s+"(_(?:native_[a-z0-9_]+|boot_log_rounds))"\', build_log, re.M)))\n    if stub_names:\n        (output / \'native-stubs.c\').write_text(\'\'.join(f\'long {name[1:]};\\n\' for name in stub_names))   # the linker names carry the leading underscore\n'
+STUB_NEW = '    build_log = (output / f\'{mode}-build.log\').read_text()\n    # ld prints undefined symbols in two shapes and this matcher used to know only one:\n    #   old:  "  \\"_native_ram_block_gpu_addon\\", referenced from:"\n    #   new:  "      _kernel_bootstrap in startup.o"   (summary block, non-LTO link)\n    # The old prefix filter also dropped the remaining old-format names\n    # (_native_verified_*, _sheng_boot_watchdog_policy), so only native_* was ever stubbed.\n    found = set()\n    for line in build_log.splitlines():\n        quoted = re.match(r\'^\\s+"(_?[A-Za-z][A-Za-z0-9_]*)"(?:,|\\s*$)\\s*(?:referenced from:)?$\', line)\n        if quoted and \'auth_ptr$\' not in line:\n            found.add(quoted.group(1))\n            continue\n        summary = re.match(r\'^\\s{4,}(_?[A-Za-z][A-Za-z0-9_]*) in \\S+\\.(?:o|cpo|o\\.cpo)$\', line)\n        if summary:\n            found.add(summary.group(1))\n    stub_names = sorted({name.lstrip(\'_\') for name in found if name})\n    if stub_names:\n        print(\'reference undefined symbols:\', stub_names, flush=True)\n        (output / \'native-stubs.c\').write_text(\n            \'\'.join(f\'long {name} __attribute__((weak, used));\\n\' for name in stub_names))\n'
+if STUB_OLD in fileset_text:
+    fileset_text = fileset_text.replace(STUB_OLD, STUB_NEW, 1)
+    print('[wrapper] the reference kernel stubs every undefined symbol in both ld formats')
+elif 'reference undefined symbols:' in fileset_text:
+    print('[wrapper] reference stub extractor already covers both ld formats')
 else:
-    print('[wrapper] reference stubs already cover every undefined symbol')
+    print('[wrapper] fileset stub block differs; left it as it is')
 
 # LTO merges the kernel into justlto.o, which references _kernel_bootstrap that the
 # arm64e comparison link cannot resolve. Build this private reference without LTO.

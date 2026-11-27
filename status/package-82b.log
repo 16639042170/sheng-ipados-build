@@ -566,3 +566,27 @@ build-xnu-4k-baseline.sh: line 830: make -C .cache/xnu-work "${XNU_BUILD_TARGET:
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-arm-driver.py ShengUfs
 == kernel: archive-08-build-sheng-source-storage
 + python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-sheng-source-storage.py --policy-dir scripts/policies/ipados-27.0.1-24A446
+== kernel: component-RamBlock
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-arm-driver.py RamBlock
+== kernel: component-Adreno740
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-arm-driver.py Adreno740
+== kernel: archive-11-fetch-sheng-dts
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/fetch-sheng-dts.py
+== kernel: archive-12-fetch-adreno-inputs
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/fetch-adreno-inputs.py
+== kernel: archive-13-prepare-sheng-gmu
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/prepare-sheng-gmu.py
+== kernel: archive-14-prepare-sheng-gpu-smmu
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/prepare-sheng-gpu-smmu.py
+== kernel: archive-15-prepare-sheng-gmu-votes
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/prepare-sheng-gmu-votes.py
+== kernel: archive-16-build-adreno740-kits
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno740-kits.py
+== kernel: archive-17-build-adreno740-accelerator
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-adreno740-accelerator.py
+== kernel: component-AppleKeyStoreState
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-arm-driver.py AppleKeyStoreState
+== kernel: archive-19-build-gop-legacy-display-27
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-gop-legacy-display-27.py
+== kernel: archive-20-build-fileset-release-reference
++ python3 /Users/runner/work/sheng-ipados-build/sheng-ipados-build/UniXNU/out/sheng/ipados-27.0.1-24A446/sheng_ipados27/tree/scripts/build-fileset-release-reference.py --tree .
